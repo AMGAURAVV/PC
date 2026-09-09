@@ -1,0 +1,164 @@
+version: '3.9'
+
+# ──────────────────────────────────────────────────────────────
+# PC Platform — Local Development Stack
+# ──────────────────────────────────────────────────────────────
+# Usage:
+#   docker-compose up -d          # start all services
+#   docker-compose up postgres    # start only DB
+#   docker-compose logs -f api    # tail API logs
+# ──────────────────────────────────────────────────────────────
+
+services:
+  # ── PostgreSQL ───────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: pc-platform-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pc_platform
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis ────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: pc-platform-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ── API (NestJS) ─────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/api.Dockerfile
+      target: development
+    container_name: pc-platform-api
+    restart: unless-stopped
+    ports:
+      - '4000:4000'
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/pc_platform?schema=public
+      REDIS_URL: redis://redis:6379
+      COMPATIBILITY_ENGINE_URL: http://compatibility-engine:4001
+    env_file:
+      - .env
+    volumes:
+      - ./apps/api:/app/apps/api
+      - ./packages:/app/packages
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: pnpm --filter @pc-platform/api dev
+
+  # ── Compatibility Engine ─────────────────────────────────────
+  compatibility-engine:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/compatibility-engine.Dockerfile
+      target: development
+    container_name: pc-platform-compatibility
+    restart: unless-stopped
+    ports:
+      - '4001:4001'
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/pc_platform?schema=public
+      REDIS_URL: redis://redis:6379
+      COMPATIBILITY_ENGINE_PORT: 4001
+    env_file:
+      - .env
+    volumes:
+      - ./services/compatibility-engine:/app/services/compatibility-engine
+      - ./packages:/app/packages
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ── Web (Next.js) ────────────────────────────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/web.Dockerfile
+      target: development
+    container_name: pc-platform-web
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      NEXT_PUBLIC_API_URL: http://api:4000/api/v1
+    env_file:
+      - .env
+    volumes:
+      - ./apps/web:/app/apps/web
+      - ./packages:/app/packages
+      - /app/node_modules
+    depends_on:
+      - api
+
+  # ── Admin (Next.js) ──────────────────────────────────────────
+  admin:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/admin.Dockerfile
+      target: development
+    container_name: pc-platform-admin
+    restart: unless-stopped
+    ports:
+      - '3001:3001'
+    environment:
+      NEXT_PUBLIC_API_URL: http://api:4000/api/v1
+    env_file:
+      - .env
+    volumes:
+      - ./apps/admin:/app/apps/admin
+      - ./packages:/app/packages
+      - /app/node_modules
+    depends_on:
+      - api
+
+  # ── Nginx (reverse proxy) ────────────────────────────────────
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: pc-platform-nginx
+    restart: unless-stopped
+    ports:
+      - '80:80'
+    volumes:
+      - ./infrastructure/nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - web
+      - admin
+      - api
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: pc-platform-network

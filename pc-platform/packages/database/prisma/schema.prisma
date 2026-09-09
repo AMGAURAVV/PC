@@ -1,0 +1,1604 @@
+// ──────────────────────────────────────────────────────────────────────────────
+// Prisma Schema — PC Platform
+// Version: 2.0.0 (full normalized schema)
+//
+// Single source of truth for the database.
+// All changes start here → migrate → generate.
+//
+// Apply changes:
+//   pnpm --filter @pc-platform/database migrate:dev   (create + apply migration)
+//   pnpm --filter @pc-platform/database generate       (regenerate Prisma client)
+//   pnpm --filter @pc-platform/database seed           (seed demo data)
+//
+// Conventions:
+//   - UUID primary keys on every model
+//   - snake_case table/column names via @@map / @map
+//   - camelCase Prisma field names
+//   - createdAt / updatedAt on every mutable model
+//   - Soft delete (deletedAt) where data must be preserved
+//   - All monetary values: Decimal(12,2), currency stored as ISO 4217 String
+// ──────────────────────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ENUMS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── User & Auth ───────────────────────────────────────────────────────────────
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+}
+
+enum AddressType {
+  HOME
+  WORK
+  OTHER
+}
+
+// ── Component Types ───────────────────────────────────────────────────────────
+
+enum ComponentType {
+  CPU
+  GPU
+  MOTHERBOARD
+  RAM
+  STORAGE
+  PSU
+  CASE
+  COOLER
+  FAN
+  MONITOR
+  KEYBOARD
+  MOUSE
+  HEADSET
+  WEBCAM
+  SPEAKER
+  MICROPHONE
+  UPS
+  OS
+  OTHER
+}
+
+// ── Spec Data Types ───────────────────────────────────────────────────────────
+
+enum SpecDataType {
+  STRING
+  INTEGER
+  DECIMAL
+  BOOLEAN
+  JSON_ARRAY
+}
+
+// ── Build ─────────────────────────────────────────────────────────────────────
+
+enum BuildStatus {
+  DRAFT
+  COMPLETE
+  ORDERED
+  ARCHIVED
+}
+
+// ── Compatibility ─────────────────────────────────────────────────────────────
+
+enum CompatibilityRuleType {
+  SOCKET_MATCH // e.g. CPU socket must match motherboard socket
+  VALUE_RANGE // e.g. PSU wattage >= required wattage
+  PHYSICAL_FIT // e.g. GPU length <= case max GPU length
+  ENUM_MEMBERSHIP // e.g. RAM type must be in motherboard supported types
+  MUTUAL_EXCLUSION // e.g. cannot have two OS components
+  CUSTOM // evaluated by compatibility engine from conditions JSON
+}
+
+enum CompatibilitySeverity {
+  ERROR // build cannot function
+  WARNING // build may work but suboptimally
+  INFO // informational note
+}
+
+// ── Commerce ──────────────────────────────────────────────────────────────────
+
+enum PriceType {
+  RETAIL
+  SALE
+  WHOLESALE
+  COST
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  FREE_SHIPPING
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  PARTIALLY_SHIPPED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+  FAILED
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  CANCELLED
+}
+
+enum PaymentProvider {
+  RAZORPAY
+  STRIPE
+  PAYPAL
+  COD
+  WALLET
+}
+
+enum ShippingStatus {
+  PENDING
+  LABEL_CREATED
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  ATTEMPTED_DELIVERY
+  EXCEPTION
+  RETURNED
+}
+
+// ── Reviews ───────────────────────────────────────────────────────────────────
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  FLAGGED
+}
+
+// ── Admin ─────────────────────────────────────────────────────────────────────
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  RESTORE
+  LOGIN
+  LOGOUT
+  EXPORT
+  IMPORT
+  APPROVE
+  REJECT
+  SUSPEND
+  ACTIVATE
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// USER & AUTH DOMAIN
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  passwordHash String     @map("password_hash")
+  firstName    String     @map("first_name")
+  lastName     String     @map("last_name")
+  phone        String?
+  avatarUrl    String?    @map("avatar_url")
+  status       UserStatus @default(PENDING_VERIFICATION)
+  isVerified   Boolean    @default(false) @map("is_verified")
+  verifiedAt   DateTime?  @map("verified_at")
+  lastLoginAt  DateTime?  @map("last_login_at")
+  deletedAt    DateTime?  @map("deleted_at")
+
+  // Relations
+  userRoles        UserRole[]
+  addresses        UserAddress[]
+  refreshTokens    RefreshToken[]
+  carts            Cart[]
+  orders           Order[]
+  builds           Build[]
+  savedBuilds      SavedBuild[]
+  wishlists        Wishlist[]
+  reviews          Review[]
+  couponUsages     CouponUsage[]
+  auditLogsAsActor AuditLog[]     @relation("AuditActor")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model Role {
+  id          String  @id @default(uuid())
+  name        String  @unique // e.g. "super_admin", "admin", "customer", "supplier"
+  description String?
+  isSystem    Boolean @default(false) @map("is_system") // system roles cannot be deleted
+
+  // Relations
+  userRoles   UserRole[]
+  permissions RolePermission[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String  @id @default(uuid())
+  action      String // e.g. "products:create", "orders:read", "users:suspend"
+  description String?
+  module      String // grouping key e.g. "products", "orders", "users"
+
+  // Relations
+  roles RolePermission[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([action])
+  @@index([module])
+  @@map("permissions")
+}
+
+model UserRole {
+  id     String @id @default(uuid())
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId String @map("role_id")
+
+  assignedAt DateTime @default(now()) @map("assigned_at")
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId       String     @map("role_id")
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  permissionId String     @map("permission_id")
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@map("role_permissions")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String    @map("user_id")
+  tokenHash String    @unique @map("token_hash") // SHA-256 hash of the raw token
+  userAgent String?   @map("user_agent")
+  ipAddress String?   @map("ip_address")
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+model UserAddress {
+  id         String      @id @default(uuid())
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String      @map("user_id")
+  type       AddressType @default(HOME)
+  label      String? // e.g. "My Home", "Office"
+  firstName  String      @map("first_name")
+  lastName   String      @map("last_name")
+  phone      String?
+  line1      String
+  line2      String?
+  city       String
+  state      String
+  postalCode String      @map("postal_code")
+  country    String      @default("IN")
+  isDefault  Boolean     @default(false) @map("is_default")
+  deletedAt  DateTime?   @map("deleted_at")
+
+  // Relations
+  orders Order[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([isDefault])
+  @@map("user_addresses")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PRODUCT DOMAIN
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Brand {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  logoUrl     String?   @map("logo_url")
+  websiteUrl  String?   @map("website_url")
+  countryCode String?   @map("country_code") // ISO 3166-1 alpha-2
+  isActive    Boolean   @default(true) @map("is_active")
+  sortOrder   Int       @default(0) @map("sort_order")
+  deletedAt   DateTime? @map("deleted_at")
+
+  // Relations
+  products Product[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([slug])
+  @@index([isActive])
+  @@map("brands")
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  imageUrl    String?   @map("image_url")
+  parentId    String?   @map("parent_id")
+  sortOrder   Int       @default(0) @map("sort_order")
+  isActive    Boolean   @default(true) @map("is_active")
+  deletedAt   DateTime? @map("deleted_at")
+
+  // Self-referential tree
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+
+  // Relations
+  productCategories ProductCategory[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([parentId])
+  @@index([slug])
+  @@index([isActive])
+  @@map("categories")
+}
+
+model Product {
+  id               String        @id @default(uuid())
+  name             String
+  slug             String        @unique
+  description      String
+  shortDescription String?       @map("short_description")
+  sku              String        @unique
+  barcode          String?       @unique
+  brand            Brand         @relation(fields: [brandId], references: [id])
+  brandId          String        @map("brand_id")
+  componentType    ComponentType @map("component_type")
+  model            String?
+  isActive         Boolean       @default(true) @map("is_active")
+  isFeatured       Boolean       @default(false) @map("is_featured")
+  isDraft          Boolean       @default(false) @map("is_draft")
+  weight           Decimal?      @db.Decimal(8, 3) // kg
+  metaTitle        String?       @map("meta_title")
+  metaDescription  String?       @map("meta_description")
+  tags             String[] // full-text search tags
+  deletedAt        DateTime?     @map("deleted_at")
+
+  // Relations
+  categories        ProductCategory[]
+  variants          ProductVariant[]
+  images            ProductImage[]
+  specifications    ProductSpecification[]
+  inventory         Inventory[]
+  prices            Price[]
+  priceHistory      PriceHistory[]
+  buildItems        BuildItem[]
+  orderItems        OrderItem[]
+  cartItems         CartItem[]
+  reviews           Review[]
+  wishlistItems     WishlistItem[]
+  powerRequirement  PowerRequirement?
+  physicalDimension PhysicalDimension?
+  cpuSpec           CpuSpec?
+  gpuSpec           GpuSpec?
+  motherboardSpec   MotherboardSpec?
+  ramSpec           RamSpec?
+  storageSpec       StorageSpec?
+  psuSpec           PsuSpec?
+  caseSpec          CaseSpec?
+  coolerSpec        CoolerSpec?
+  fanSpec           FanSpec?
+  monitorSpec       MonitorSpec?
+  peripheralSpec    PeripheralSpec?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([brandId])
+  @@index([componentType])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@index([slug])
+  @@index([sku])
+  @@index([deletedAt])
+  @@map("products")
+}
+
+model ProductCategory {
+  id         String   @id @default(uuid())
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  String   @map("product_id")
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId String   @map("category_id")
+  isPrimary  Boolean  @default(false) @map("is_primary") // one primary category per product
+
+  @@unique([productId, categoryId])
+  @@index([categoryId])
+  @@index([productId])
+  @@map("product_categories")
+}
+
+model ProductVariant {
+  id         String  @id @default(uuid())
+  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  String  @map("product_id")
+  name       String // e.g. "Arctic White", "16GB Kit"
+  sku        String  @unique
+  barcode    String? @unique
+  attributes Json    @default("{}") // { color: "white", capacity: "16GB" }
+  isActive   Boolean @default(true) @map("is_active")
+  sortOrder  Int     @default(0) @map("sort_order")
+
+  // Relations
+  images         ProductImage[]
+  inventory      Inventory[]
+  prices         Price[]
+  cartItems      CartItem[]
+  orderItems     OrderItem[]
+  priceHistories PriceHistory[]
+  buildItems     BuildItem[]
+  wishlistItems  WishlistItem[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([productId])
+  @@index([sku])
+  @@map("product_variants")
+}
+
+model ProductImage {
+  id        String          @id @default(uuid())
+  product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String          @map("product_id")
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  variantId String?         @map("variant_id")
+  url       String
+  altText   String?         @map("alt_text")
+  isPrimary Boolean         @default(false) @map("is_primary")
+  width     Int?
+  height    Int?
+  sizeBytes Int?            @map("size_bytes")
+  mimeType  String?         @map("mime_type")
+  sortOrder Int             @default(0) @map("sort_order")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([productId])
+  @@index([variantId])
+  @@map("product_images")
+}
+
+// Generic EAV specification storage (filterable, searchable)
+model ProductSpecification {
+  id        String       @id @default(uuid())
+  product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String       @map("product_id")
+  key       String // e.g. "cores", "base_clock", "tdp"
+  value     String // stored as string, typed by dataType
+  dataType  SpecDataType @default(STRING) @map("data_type")
+  unit      String? // e.g. "GHz", "W", "MB"
+  groupKey  String?      @map("group_key") // e.g. "performance", "physical"
+  sortOrder Int          @default(0) @map("sort_order")
+  isPublic  Boolean      @default(true) @map("is_public")
+
+  @@unique([productId, key])
+  @@index([productId])
+  @@index([key])
+  @@map("product_specifications")
+}
+
+// Component type metadata (admin-managed list of component types and their spec keys)
+model ComponentType_Def {
+  id          String        @id @default(uuid())
+  type        ComponentType @unique
+  displayName String        @map("display_name")
+  description String?
+  iconUrl     String?       @map("icon_url")
+  sortOrder   Int           @default(0) @map("sort_order")
+  isActive    Boolean       @default(true) @map("is_active")
+
+  // Relations
+  specDefinitions ComponentSpecDefinition[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("component_type_defs")
+}
+
+// Defines the allowed spec keys for each component type (schema-level documentation)
+model ComponentSpecDefinition {
+  id              String            @id @default(uuid())
+  componentType   ComponentType_Def @relation(fields: [componentTypeId], references: [id], onDelete: Cascade)
+  componentTypeId String            @map("component_type_id")
+  key             String
+  label           String // Human-readable label
+  dataType        SpecDataType      @default(STRING) @map("data_type")
+  unit            String?
+  isRequired      Boolean           @default(false) @map("is_required")
+  isFilterable    Boolean           @default(false) @map("is_filterable")
+  sortOrder       Int               @default(0) @map("sort_order")
+  description     String?
+
+  @@unique([componentTypeId, key])
+  @@index([componentTypeId])
+  @@map("component_spec_definitions")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PER-COMPONENT NORMALIZED SPEC TABLES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// CPU Specifications
+model CpuSpec {
+  id        String  @id @default(uuid())
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String  @unique @map("product_id")
+
+  socketType        String   @map("socket_type") // e.g. "AM5", "LGA1700"
+  architecture      String? // e.g. "Zen 4", "Raptor Lake"
+  processTech       String?  @map("process_tech") // e.g. "5nm", "10nm ESF"
+  cores             Int
+  threads           Int
+  baseClockMhz      Int      @map("base_clock_mhz")
+  boostClockMhz     Int?     @map("boost_clock_mhz")
+  l2CacheMb         Decimal? @map("l2_cache_mb") @db.Decimal(6, 2)
+  l3CacheMb         Decimal? @map("l3_cache_mb") @db.Decimal(6, 2)
+  tdpW              Int      @map("tdp_w")
+  maxTdpW           Int?     @map("max_tdp_w") // PBP vs MTP (Intel) or PPT
+  memoryType        String   @map("memory_type") // e.g. "DDR5", "DDR4"
+  maxMemoryGb       Int      @map("max_memory_gb")
+  maxMemorySpeedMhz Int?     @map("max_memory_speed_mhz")
+  memoryChannels    Int      @default(2) @map("memory_channels")
+  pcieGen           Int?     @map("pcie_gen") // PCIe lanes generation
+  pcieLanes         Int?     @map("pcie_lanes")
+  hasIgpu           Boolean  @default(false) @map("has_igpu")
+  igpuModel         String?  @map("igpu_model")
+  coolerIncluded    Boolean  @default(false) @map("cooler_included")
+
+  @@map("cpu_specs")
+}
+
+// GPU Specifications
+model GpuSpec {
+  id        String  @id @default(uuid())
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String  @unique @map("product_id")
+
+  chipset         String // e.g. "AD102", "GC-102"
+  gpuArchitecture String? @map("gpu_architecture") // e.g. "Ada Lovelace", "RDNA 3"
+  processTech     String? @map("process_tech")
+  vramGb          Int     @map("vram_gb")
+  vramType        String  @map("vram_type") // e.g. "GDDR6X", "GDDR6"
+  vramBusBit      Int     @map("vram_bus_bit")
+  baseClockMhz    Int?    @map("base_clock_mhz")
+  boostClockMhz   Int?    @map("boost_clock_mhz")
+  tdpW            Int     @map("tdp_w")
+  recommendedPsuW Int?    @map("recommended_psu_w")
+  powerConnectors String  @map("power_connectors") // e.g. "1x 16-pin", "2x 8-pin"
+  pcieSlot        String  @default("x16") @map("pcie_slot")
+  pcieGen         Int     @default(4) @map("pcie_gen")
+  slotWidth       Int     @default(2) @map("slot_width") // 2-slot, 3-slot, 4-slot
+  lengthMm        Int     @map("length_mm")
+  widthMm         Int?    @map("width_mm")
+  heightMm        Int?    @map("height_mm")
+  displayports    Int     @default(3) @map("displayports")
+  hdmiPorts       Int     @default(1) @map("hdmi_ports")
+  hdmiVersion     String? @map("hdmi_version")
+  dpVersion       String? @map("dp_version")
+  hasRaytracing   Boolean @default(false) @map("has_raytracing")
+  hasDlss         Boolean @default(false) @map("has_dlss")
+  hasFsr          Boolean @default(false) @map("has_fsr")
+
+  @@map("gpu_specs")
+}
+
+// Motherboard Specifications
+model MotherboardSpec {
+  id        String  @id @default(uuid())
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String  @unique @map("product_id")
+
+  socketType         String   @map("socket_type")
+  chipset            String
+  formFactor         String   @map("form_factor") // e.g. "ATX", "mATX", "Mini-ITX"
+  supportedMemTypes  String[] @map("supported_mem_types") // e.g. ["DDR5"]
+  ramSlots           Int      @map("ram_slots")
+  maxRamGb           Int      @map("max_ram_gb")
+  maxRamSpeedMhz     Int?     @map("max_ram_speed_mhz")
+  pcieX16Slots       Int      @default(1) @map("pcie_x16_slots")
+  pcieX1Slots        Int      @default(0) @map("pcie_x1_slots")
+  m2Slots            Int      @default(1) @map("m2_slots")
+  m2Details          Json     @default("[]") @map("m2_details") // [{slot:1, key:"M", pcie:5, sata:false}]
+  sataSlots          Int      @default(4) @map("sata_slots")
+  usbRearPorts       Json     @default("[]") @map("usb_rear_ports") // [{type:"USB 3.2 Gen2 Type-A", count:4}]
+  usbHeaderSlots     Json     @default("[]") @map("usb_header_slots")
+  hasWifi            Boolean  @default(false) @map("has_wifi")
+  wifiStandard       String?  @map("wifi_standard") // e.g. "Wi-Fi 6E"
+  hasBluetooth       Boolean  @default(false) @map("has_bluetooth")
+  bluetoothVersion   String?  @map("bluetooth_version")
+  hasRgbHeaders      Boolean  @default(false) @map("has_rgb_headers")
+  hasArgbHeaders     Boolean  @default(false) @map("has_argb_headers")
+  lanChipset         String?  @map("lan_chipset")
+  lanSpeedGbps       Decimal? @map("lan_speed_gbps") @db.Decimal(4, 1)
+  audioChipset       String?  @map("audio_chipset")
+  biosFlashback      Boolean  @default(false) @map("bios_flashback")
+  thunderboltSupport Boolean  @default(false) @map("thunderbolt_support")
+
+  @@map("motherboard_specs")
+}
+
+// RAM Specifications
+model RamSpec {
+  id        String  @id @default(uuid())
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String  @unique @map("product_id")
+
+  memType            String   @map("mem_type") // "DDR4", "DDR5"
+  totalCapacityGb    Int      @map("total_capacity_gb")
+  stickCount         Int      @default(2) @map("stick_count")
+  capacityPerStickGb Int      @map("capacity_per_stick_gb")
+  speedMhz           Int      @map("speed_mhz")
+  casLatency         Int?     @map("cas_latency")
+  timing             String? // e.g. "16-18-18-38"
+  voltageV           Decimal? @map("voltage_v") @db.Decimal(4, 3)
+  formFactor         String   @default("DIMM") @map("form_factor") // DIMM, SO-DIMM
+  isEcc              Boolean  @default(false) @map("is_ecc")
+  isRegistered       Boolean  @default(false) @map("is_registered")
+  hasHeatspreader    Boolean  @default(false) @map("has_heatspreader")
+  hasRgb             Boolean  @default(false) @map("has_rgb")
+
+  @@map("ram_specs")
+}
+
+// Storage Specifications
+model StorageSpec {
+  id        String  @id @default(uuid())
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String  @unique @map("product_id")
+
+  storageType       String   @map("storage_type") // "NVMe SSD", "SATA SSD", "HDD"
+  capacityGb        Int      @map("capacity_gb")
+  interface         String // "PCIe 5.0 x4", "SATA III", "PCIe 4.0 x4"
+  formFactor        String   @map("form_factor") // "M.2 2280", "2.5\"", "3.5\""
+  nandType          String?  @map("nand_type") // "TLC", "QLC", "MLC"
+  controller        String? // e.g. "Phison E26"
+  seqReadMbps       Int?     @map("seq_read_mbps")
+  seqWriteMbps      Int?     @map("seq_write_mbps")
+  randRead4kIops    Int?     @map("rand_read_4k_iops")
+  randWrite4kIops   Int?     @map("rand_write_4k_iops")
+  tbw               Int? // Terabytes Written (endurance)
+  mtbfHours         Int?     @map("mtbf_hours")
+  rpmSpeed          Int?     @map("rpm_speed") // for HDDs
+  cacheGb           Decimal? @map("cache_gb") @db.Decimal(5, 2)
+  encryptionSupport Boolean  @default(false) @map("encryption_support")
+  dramCache         Boolean  @default(false) @map("dram_cache")
+
+  @@map("storage_specs")
+}
+
+// PSU Specifications
+model PsuSpec {
+  id        String  @id @default(uuid())
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String  @unique @map("product_id")
+
+  wattage          Int
+  efficiencyRating String   @map("efficiency_rating") // "80+ Gold", "80+ Titanium"
+  modular          String   @map("modular") // "Full", "Semi", "Non-modular"
+  formFactor       String   @default("ATX") @map("form_factor")
+  atx12vVersion    String?  @map("atx12v_version") // "ATX 3.0", "ATX 2.4"
+  hasAtx3Connector Boolean  @default(false) @map("has_atx3_connector")
+  eps12vConnectors Int      @default(1) @map("eps12v_connectors")
+  pcieConnectors   Json     @default("[]") @map("pcie_connectors") // [{type:"8-pin",count:4},{type:"16-pin",count:1}]
+  sataConnectors   Int      @default(6) @map("sata_connectors")
+  molexConnectors  Int      @default(2) @map("molex_connectors")
+  fanSizeMm        Int      @default(120) @map("fan_size_mm")
+  isZeroFan        Boolean  @default(false) @map("is_zero_fan")
+  warrantyYears    Int?     @map("warranty_years")
+  protections      String[] // e.g. ["OVP", "OCP", "SCP", "OPP"]
+
+  @@map("psu_specs")
+}
+
+// Case Specifications
+model CaseSpec {
+  id        String  @id @default(uuid())
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String  @unique @map("product_id")
+
+  caseType             String   @map("case_type") // "Tower", "Mid-Tower", "Full-Tower", "SFF"
+  supportedFormFactors String[] @map("supported_form_factors") // ["ATX", "mATX", "Mini-ITX"]
+  maxMbFormFactor      String   @map("max_mb_form_factor")
+  maxGpuLengthMm       Int      @map("max_gpu_length_mm")
+  maxGpuWidthMm        Int?     @map("max_gpu_width_mm")
+  maxCpuCoolerHeightMm Int      @map("max_cpu_cooler_height_mm")
+  maxPsuLengthMm       Int?     @map("max_psu_length_mm")
+  drive35Bays          Int      @default(0) @map("drive_35_bays")
+  drive25Bays          Int      @default(0) @map("drive_25_bays")
+  pciSlots             Int      @default(7) @map("pci_slots")
+  frontPanelUsb        Json     @default("[]") @map("front_panel_usb")
+  hasFrontUsbc         Boolean  @default(false) @map("has_front_usbc")
+  radiatorSupport      Json     @default("[]") @map("radiator_support") // [{location:"top",maxMm:360},{...}]
+  includedFans         Int      @default(0) @map("included_fans")
+  maxFans              Int?     @map("max_fans")
+  hasGlassPanel        Boolean  @default(false) @map("has_glass_panel")
+  hasRgb               Boolean  @default(false) @map("has_rgb")
+  dustFilters          Boolean  @default(false) @map("dust_filters")
+  widthMm              Int?     @map("width_mm")
+  heightMm             Int?     @map("height_mm")
+  depthMm              Int?     @map("depth_mm")
+
+  @@map("case_specs")
+}
+
+// CPU Cooler Specifications
+model CoolerSpec {
+  id        String  @id @default(uuid())
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String  @unique @map("product_id")
+
+  coolerType           String   @map("cooler_type") // "Air", "AIO Liquid", "Custom Loop"
+  supportedSockets     String[] @map("supported_sockets") // ["AM5", "LGA1700", "AM4"]
+  tdpRatingW           Int      @map("tdp_rating_w")
+  heightMm             Int?     @map("height_mm") // for air coolers
+  radiatorSizeMm       Int?     @map("radiator_size_mm") // for AIOs: 120, 240, 280, 360
+  fanCount             Int      @default(1) @map("fan_count")
+  fanSizeMm            Int      @default(120) @map("fan_size_mm")
+  maxFanRpm            Int?     @map("max_fan_rpm")
+  noiseDbA             Decimal? @map("noise_db_a") @db.Decimal(5, 2)
+  hasArgb              Boolean  @default(false) @map("has_argb")
+  ramClearanceMm       Int?     @map("ram_clearance_mm")
+  includesThermalPaste Boolean  @default(true) @map("includes_thermal_paste")
+
+  @@map("cooler_specs")
+}
+
+// Case Fan Specifications
+model FanSpec {
+  id        String  @id @default(uuid())
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String  @unique @map("product_id")
+
+  sizeMm                 Int      @map("size_mm") // 80, 92, 120, 140, 200
+  minRpm                 Int?     @map("min_rpm")
+  maxRpm                 Int      @map("max_rpm")
+  maxAirflowCfm          Decimal? @map("max_airflow_cfm") @db.Decimal(6, 2)
+  maxStaticPressureMmH2o Decimal? @map("max_static_pressure_mm_h2o") @db.Decimal(5, 2)
+  maxNoiseDbA            Decimal? @map("max_noise_db_a") @db.Decimal(5, 2)
+  bearingType            String?  @map("bearing_type") // "Fluid Dynamic", "Rifle", "Ball"
+  connector              String   @default("4-pin PWM") // "4-pin PWM", "3-pin DC", "3-pin ARGB"
+  isPwm                  Boolean  @default(true) @map("is_pwm")
+  hasArgb                Boolean  @default(false) @map("has_argb")
+  hasRgb                 Boolean  @default(false) @map("has_rgb")
+  ledColor               String?  @map("led_color")
+  packCount              Int      @default(1) @map("pack_count") // sold as 3-pack etc.
+
+  @@map("fan_specs")
+}
+
+// Monitor Specifications
+model MonitorSpec {
+  id        String  @id @default(uuid())
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String  @unique @map("product_id")
+
+  screenSizeInch     Decimal  @map("screen_size_inch") @db.Decimal(4, 1)
+  resolutionW        Int      @map("resolution_w")
+  resolutionH        Int      @map("resolution_h")
+  panelType          String   @map("panel_type") // "IPS", "VA", "TN", "OLED", "Mini-LED"
+  refreshRateHz      Int      @map("refresh_rate_hz")
+  responseTimeMs     Decimal? @map("response_time_ms") @db.Decimal(4, 2)
+  brightness         Int? // nits
+  contrastRatio      String?  @map("contrast_ratio")
+  colorGamutPercent  Json     @default("{}") @map("color_gamut_percent") // {sRGB: 99, DCI_P3: 90}
+  hdrSupport         String?  @map("hdr_support") // "HDR400", "HDR1000", null
+  adaptiveSyncType   String?  @map("adaptive_sync_type") // "G-Sync", "FreeSync Premium", "G-Sync Compatible"
+  ports              Json     @default("[]") @map("ports") // [{type:"HDMI 2.1",count:2},{type:"DP 1.4",count:1}]
+  hasBuiltinSpeakers Boolean  @default(false) @map("has_builtin_speakers")
+  hasUsbHub          Boolean  @default(false) @map("has_usb_hub")
+  vesa               String? // "100x100", "75x75"
+  curvatureMm        Int?     @map("curvature_mm")
+  aspectRatio        String?  @map("aspect_ratio") // "16:9", "21:9", "32:9"
+
+  @@map("monitor_specs")
+}
+
+// Peripheral Specifications (keyboard, mouse, headset, etc.)
+model PeripheralSpec {
+  id        String  @id @default(uuid())
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String  @unique @map("product_id")
+
+  peripheralType   ComponentType @map("peripheral_type") // KEYBOARD, MOUSE, HEADSET, etc.
+  connectivity     String[] // ["USB", "Bluetooth 5.2", "2.4GHz Wireless"]
+  isWireless       Boolean       @default(false) @map("is_wireless")
+  batteryMah       Int?          @map("battery_mah")
+  batteryLifeHours Int?          @map("battery_life_hours")
+  hasRgb           Boolean       @default(false) @map("has_rgb")
+  // Keyboard-specific
+  switchType       String?       @map("switch_type") // "Cherry MX Red", "Optical", "Membrane"
+  keyLayout        String?       @map("key_layout") // "Full-size", "TKL", "75%", "60%"
+  isHotSwap        Boolean       @default(false) @map("is_hot_swap")
+  // Mouse-specific
+  maxDpi           Int?          @map("max_dpi")
+  buttonCount      Int?          @map("button_count")
+  sensorType       String?       @map("sensor_type") // "Optical", "Laser"
+  // Headset-specific
+  driverSizeMm     Int?          @map("driver_size_mm")
+  frequencyHz      String?       @map("frequency_hz") // e.g. "20-20000 Hz"
+  hasMic           Boolean       @default(false) @map("has_mic")
+  surroundSound    String?       @map("surround_sound") // "7.1", "Stereo"
+
+  @@map("peripheral_specs")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INVENTORY & SUPPLIER DOMAIN
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Supplier {
+  id         String    @id @default(uuid())
+  name       String    @unique
+  code       String    @unique // Short code e.g. "MDK", "PRIME"
+  email      String?
+  phone      String?
+  website    String?
+  address    Json? // free-form address JSON
+  isActive   Boolean   @default(true) @map("is_active")
+  isPlatform Boolean   @default(false) @map("is_platform") // true = the platform itself
+  deletedAt  DateTime? @map("deleted_at")
+
+  // Relations
+  inventory    Inventory[]
+  priceHistory PriceHistory[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([isActive])
+  @@map("suppliers")
+}
+
+model Inventory {
+  id                String          @id @default(uuid())
+  product           Product         @relation(fields: [productId], references: [id])
+  productId         String          @map("product_id")
+  variant           ProductVariant? @relation(fields: [variantId], references: [id])
+  variantId         String?         @map("variant_id")
+  supplier          Supplier        @relation(fields: [supplierId], references: [id])
+  supplierId        String          @map("supplier_id")
+  quantity          Int             @default(0)
+  reservedQty       Int             @default(0) @map("reserved_qty") // qty reserved in pending orders
+  lowStockThreshold Int             @default(5) @map("low_stock_threshold")
+  isInfinite        Boolean         @default(false) @map("is_infinite") // digital/unlimited products
+  locationCode      String?         @map("location_code") // warehouse bin/location
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([productId, variantId, supplierId])
+  @@index([productId])
+  @@index([supplierId])
+  @@index([quantity])
+  @@map("inventory")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PRICING DOMAIN
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Price {
+  id        String          @id @default(uuid())
+  product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String          @map("product_id")
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  variantId String?         @map("variant_id")
+  priceType PriceType       @default(RETAIL) @map("price_type")
+  amount    Decimal         @db.Decimal(12, 2)
+  currency  String          @default("INR") // ISO 4217
+  compareAt Decimal?        @map("compare_at") @db.Decimal(12, 2) // original price for sale display
+  isActive  Boolean         @default(true) @map("is_active")
+  startsAt  DateTime?       @map("starts_at")
+  endsAt    DateTime?       @map("ends_at")
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([productId, variantId, priceType, currency])
+  @@index([productId])
+  @@index([variantId])
+  @@index([currency])
+  @@index([isActive])
+  @@map("prices")
+}
+
+model PriceHistory {
+  id         String          @id @default(uuid())
+  product    Product         @relation(fields: [productId], references: [id])
+  productId  String          @map("product_id")
+  variant    ProductVariant? @relation(fields: [variantId], references: [id])
+  variantId  String?         @map("variant_id")
+  supplier   Supplier?       @relation(fields: [supplierId], references: [id])
+  supplierId String?         @map("supplier_id")
+  priceType  PriceType       @default(RETAIL) @map("price_type")
+  amount     Decimal         @db.Decimal(12, 2)
+  currency   String          @default("INR")
+  changedBy  String?         @map("changed_by") // admin userId or "system"
+  reason     String? // e.g. "Seasonal sale"
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([productId])
+  @@index([createdAt])
+  @@map("price_history")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BUILD DOMAIN
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Build {
+  id              String      @id @default(uuid())
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String      @map("user_id")
+  name            String      @default("My Build")
+  description     String?
+  status          BuildStatus @default(DRAFT)
+  isPublic        Boolean     @default(false) @map("is_public")
+  thumbnailUrl    String?     @map("thumbnail_url")
+  totalPriceCache Decimal?    @map("total_price_cache") @db.Decimal(12, 2) // denormalized, recomputed on item change
+  deletedAt       DateTime?   @map("deleted_at")
+
+  // Relations
+  items       BuildItem[]
+  savedBy     SavedBuild[]
+  versions    BuildVersion[]
+  sharedLinks SharedBuildLink[]
+  orders      Order[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([isPublic])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("builds")
+}
+
+model BuildItem {
+  id            String          @id @default(uuid())
+  build         Build           @relation(fields: [buildId], references: [id], onDelete: Cascade)
+  buildId       String          @map("build_id")
+  product       Product         @relation(fields: [productId], references: [id])
+  productId     String          @map("product_id")
+  variant       ProductVariant? @relation(fields: [variantId], references: [id])
+  variantId     String?         @map("variant_id")
+  componentType ComponentType   @map("component_type") // denormalized for quick filtering
+  quantity      Int             @default(1)
+  sortOrder     Int             @default(0) @map("sort_order")
+  priceSnapshot Decimal?        @map("price_snapshot") @db.Decimal(12, 2) // price at time of adding
+  notes         String? // user notes on this item
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([buildId])
+  @@index([productId])
+  @@index([componentType])
+  @@map("build_items")
+}
+
+model SavedBuild {
+  id      String @id @default(uuid())
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  String @map("user_id")
+  build   Build  @relation(fields: [buildId], references: [id], onDelete: Cascade)
+  buildId String @map("build_id")
+
+  savedAt DateTime @default(now()) @map("saved_at")
+
+  @@unique([userId, buildId])
+  @@index([userId])
+  @@map("saved_builds")
+}
+
+model BuildVersion {
+  id            String  @id @default(uuid())
+  build         Build   @relation(fields: [buildId], references: [id], onDelete: Cascade)
+  buildId       String  @map("build_id")
+  versionNumber Int     @map("version_number")
+  label         String? // e.g. "Before GPU upgrade"
+  snapshot      Json // full snapshot of build + items at this version
+  createdBy     String? @map("created_by") // userId
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([buildId, versionNumber])
+  @@index([buildId])
+  @@map("build_versions")
+}
+
+model SharedBuildLink {
+  id        String    @id @default(uuid())
+  build     Build     @relation(fields: [buildId], references: [id], onDelete: Cascade)
+  buildId   String    @map("build_id")
+  token     String    @unique // random URL-safe token
+  label     String? // optional label e.g. "Shared with friend"
+  expiresAt DateTime? @map("expires_at")
+  viewCount Int       @default(0) @map("view_count")
+  maxViews  Int?      @map("max_views") // null = unlimited
+  isActive  Boolean   @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([token])
+  @@index([buildId])
+  @@map("shared_build_links")
+}
+
+model BuildTemplate {
+  id           String   @id @default(uuid())
+  name         String
+  slug         String   @unique
+  description  String?
+  category     String? // e.g. "Gaming", "Workstation", "Budget"
+  budgetMin    Decimal? @map("budget_min") @db.Decimal(12, 2)
+  budgetMax    Decimal? @map("budget_max") @db.Decimal(12, 2)
+  items        Json // [{productId, componentType, quantity, notes}]
+  thumbnailUrl String?  @map("thumbnail_url")
+  isActive     Boolean  @default(true) @map("is_active")
+  isFeatured   Boolean  @default(false) @map("is_featured")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdBy    String?  @map("created_by") // admin userId
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([isActive])
+  @@index([isFeatured])
+  @@map("build_templates")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMPATIBILITY DOMAIN
+// (Data only — evaluation logic lives in the compatibility-engine service)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model CompatibilityRule {
+  id          String                @id @default(uuid())
+  name        String                @unique
+  description String
+  ruleType    CompatibilityRuleType @map("rule_type")
+  severity    CompatibilitySeverity @default(ERROR)
+  isActive    Boolean               @default(true) @map("is_active")
+  priority    Int                   @default(100) // lower = evaluated first
+  tags        String[] // e.g. ["cpu", "socket", "motherboard"]
+  notes       String? // Internal notes for rule authors
+
+  // Relations
+  conditions CompatibilityRuleCondition[]
+  result     CompatibilityRuleResult?
+  warnings   CompatibilityWarning[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([isActive])
+  @@index([ruleType])
+  @@index([severity])
+  @@map("compatibility_rules")
+}
+
+// Conditions that must ALL be true for the rule to apply/trigger
+model CompatibilityRuleCondition {
+  id                     String            @id @default(uuid())
+  rule                   CompatibilityRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  ruleId                 String            @map("rule_id")
+  conditionIndex         Int               @map("condition_index") // ordering within rule
+  // Which component to inspect
+  componentType          ComponentType     @map("component_type")
+  // JSON path into the spec table row e.g. "socketType", "tdpW", "supportedSockets"
+  attributePath          String            @map("attribute_path")
+  // Comparison operator
+  operator               String // "eq", "ne", "gt", "gte", "lt", "lte", "in", "contains", "matches"
+  // The reference value (compared against the other component's attribute)
+  compareToComponentType ComponentType?    @map("compare_to_component_type")
+  compareToAttributePath String?           @map("compare_to_attribute_path")
+  // Or a literal value
+  literalValue           String?           @map("literal_value")
+
+  @@index([ruleId])
+  @@map("compatibility_rule_conditions")
+}
+
+// What the rule produces when conditions are met
+model CompatibilityRuleResult {
+  id               String            @id @default(uuid())
+  rule             CompatibilityRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  ruleId           String            @unique @map("rule_id")
+  title            String // Short title e.g. "CPU/Motherboard socket mismatch"
+  message          String // Full user-facing message template (supports {{CPU.socketType}} placeholders)
+  suggestion       String? // Suggested fix e.g. "Select a motherboard with AM5 socket"
+  documentationUrl String?           @map("documentation_url")
+
+  @@map("compatibility_rule_results")
+}
+
+// Per-build evaluated warnings stored for display (not re-evaluated every time)
+model CompatibilityWarning {
+  id         String                @id @default(uuid())
+  buildId    String                @map("build_id") // Not FK — builds may be deleted
+  rule       CompatibilityRule     @relation(fields: [ruleId], references: [id])
+  ruleId     String                @map("rule_id")
+  severity   CompatibilitySeverity
+  title      String
+  message    String
+  resolvedAt DateTime?             @map("resolved_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([buildId])
+  @@index([ruleId])
+  @@map("compatibility_warnings")
+}
+
+// Per-product power draw data (feeds PSU adequacy check)
+model PowerRequirement {
+  id          String  @id @default(uuid())
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   String  @unique @map("product_id")
+  idleW       Int?    @map("idle_w")
+  typicalW    Int     @map("typical_w")
+  peakW       Int     @map("peak_w")
+  sourceNotes String? @map("source_notes") // e.g. "Measured at wall per TechPowerUp review"
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("power_requirements")
+}
+
+// Per-product physical clearance data (feeds physical fit checks)
+model PhysicalDimension {
+  id              String   @id @default(uuid())
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId       String   @unique @map("product_id")
+  lengthMm        Decimal? @map("length_mm") @db.Decimal(7, 2)
+  widthMm         Decimal? @map("width_mm") @db.Decimal(7, 2)
+  heightMm        Decimal? @map("height_mm") @db.Decimal(7, 2)
+  weightG         Decimal? @map("weight_g") @db.Decimal(8, 2)
+  // Clearance requirements (for components that need space)
+  clearanceTopMm  Int?     @map("clearance_top_mm") // e.g. cooler needs clearance from top panel
+  clearanceSideMm Int?     @map("clearance_side_mm")
+  notes           String?
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("physical_dimensions")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COUPON DOMAIN
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Coupon {
+  id                      String     @id @default(uuid())
+  code                    String     @unique
+  description             String?
+  couponType              CouponType @map("coupon_type")
+  value                   Decimal    @db.Decimal(10, 2) // percentage or fixed amount
+  minOrderAmount          Decimal?   @map("min_order_amount") @db.Decimal(12, 2)
+  maxDiscountAmount       Decimal?   @map("max_discount_amount") @db.Decimal(12, 2) // cap on percentage coupons
+  currency                String     @default("INR")
+  usageLimit              Int?       @map("usage_limit") // null = unlimited
+  usagePerUser            Int?       @map("usage_per_user") // null = unlimited
+  usageCount              Int        @default(0) @map("usage_count")
+  isActive                Boolean    @default(true) @map("is_active")
+  startsAt                DateTime?  @map("starts_at")
+  expiresAt               DateTime?  @map("expires_at")
+  // Eligibility filters
+  applicableToProductIds  String[]   @map("applicable_to_product_ids") // empty = all products
+  applicableToCategoryIds String[]   @map("applicable_to_category_ids")
+
+  // Relations
+  usages CouponUsage[]
+  orders Order[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([code])
+  @@index([isActive])
+  @@map("coupons")
+}
+
+model CouponUsage {
+  id       String @id @default(uuid())
+  coupon   Coupon @relation(fields: [couponId], references: [id])
+  couponId String @map("coupon_id")
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String @map("user_id")
+  order    Order  @relation(fields: [orderId], references: [id])
+  orderId  String @map("order_id")
+
+  usedAt DateTime @default(now()) @map("used_at")
+
+  @@unique([couponId, orderId])
+  @@index([couponId])
+  @@index([userId])
+  @@map("coupon_usages")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CART DOMAIN
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Cart {
+  id           String    @id @default(uuid())
+  user         User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId       String?   @map("user_id") // null = guest cart
+  sessionToken String?   @unique @map("session_token") // guest session identifier
+  expiresAt    DateTime? @map("expires_at") // guest carts expire
+  currency     String    @default("INR")
+
+  // Relations
+  items CartItem[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@map("carts")
+}
+
+model CartItem {
+  id            String          @id @default(uuid())
+  cart          Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cartId        String          @map("cart_id")
+  product       Product         @relation(fields: [productId], references: [id])
+  productId     String          @map("product_id")
+  variant       ProductVariant? @relation(fields: [variantId], references: [id])
+  variantId     String?         @map("variant_id")
+  quantity      Int             @default(1)
+  savedForLater Boolean         @default(false) @map("saved_for_later")
+
+  addedAt   DateTime @default(now()) @map("added_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([cartId, productId, variantId])
+  @@index([cartId])
+  @@index([productId])
+  @@map("cart_items")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ORDER DOMAIN
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Order {
+  id                 String      @id @default(uuid())
+  orderNumber        String      @unique @map("order_number") // human-readable e.g. "PCP-2024-00001"
+  user               User        @relation(fields: [userId], references: [id])
+  userId             String      @map("user_id")
+  build              Build?      @relation(fields: [buildId], references: [id])
+  buildId            String?     @map("build_id")
+  shippingAddress    UserAddress @relation(fields: [shippingAddressId], references: [id])
+  shippingAddressId  String      @map("shipping_address_id")
+  coupon             Coupon?     @relation(fields: [couponId], references: [id])
+  couponId           String?     @map("coupon_id")
+  status             OrderStatus @default(PENDING)
+  currency           String      @default("INR")
+  subtotal           Decimal     @db.Decimal(12, 2)
+  discountAmount     Decimal     @default(0) @map("discount_amount") @db.Decimal(12, 2)
+  shippingCost       Decimal     @map("shipping_cost") @db.Decimal(12, 2)
+  taxAmount          Decimal     @map("tax_amount") @db.Decimal(12, 2)
+  total              Decimal     @db.Decimal(12, 2)
+  notes              String?
+  cancelledAt        DateTime?   @map("cancelled_at")
+  cancellationReason String?     @map("cancellation_reason")
+
+  // Relations
+  items       OrderItem[]
+  payments    Payment[]
+  shipments   Shipment[]
+  couponUsage CouponUsage[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([status])
+  @@index([orderNumber])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String          @id @default(uuid())
+  order       Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId     String          @map("order_id")
+  product     Product         @relation(fields: [productId], references: [id])
+  productId   String          @map("product_id")
+  variant     ProductVariant? @relation(fields: [variantId], references: [id])
+  variantId   String?         @map("variant_id")
+  // Snapshot fields (immutable after order placed)
+  productName String          @map("product_name")
+  variantName String?         @map("variant_name")
+  sku         String
+  quantity    Int
+  unitPrice   Decimal         @map("unit_price") @db.Decimal(12, 2)
+  totalPrice  Decimal         @map("total_price") @db.Decimal(12, 2)
+  currency    String          @default("INR")
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model Payment {
+  id                String          @id @default(uuid())
+  order             Order           @relation(fields: [orderId], references: [id])
+  orderId           String          @map("order_id")
+  provider          PaymentProvider
+  providerPaymentId String?         @unique @map("provider_payment_id")
+  providerOrderId   String?         @map("provider_order_id")
+  amount            Decimal         @db.Decimal(12, 2)
+  currency          String          @default("INR")
+  status            PaymentStatus   @default(PENDING)
+  paidAt            DateTime?       @map("paid_at")
+  failureReason     String?         @map("failure_reason")
+  refundedAmount    Decimal?        @map("refunded_amount") @db.Decimal(12, 2)
+  refundedAt        DateTime?       @map("refunded_at")
+  metadata          Json? // raw provider webhook payload
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([orderId])
+  @@index([status])
+  @@index([providerPaymentId])
+  @@map("payments")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SHIPPING DOMAIN
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Shipment {
+  id                  String         @id @default(uuid())
+  order               Order          @relation(fields: [orderId], references: [id])
+  orderId             String         @map("order_id")
+  carrier             String? // e.g. "BlueDart", "DTDC", "FedEx"
+  trackingNumber      String?        @unique @map("tracking_number")
+  trackingUrl         String?        @map("tracking_url")
+  status              ShippingStatus @default(PENDING)
+  shippedAt           DateTime?      @map("shipped_at")
+  estimatedDeliveryAt DateTime?      @map("estimated_delivery_at")
+  deliveredAt         DateTime?      @map("delivered_at")
+  notes               String?
+
+  // Relations
+  events ShipmentEvent[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([orderId])
+  @@index([status])
+  @@index([trackingNumber])
+  @@map("shipments")
+}
+
+model ShipmentEvent {
+  id          String         @id @default(uuid())
+  shipment    Shipment       @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  shipmentId  String         @map("shipment_id")
+  status      ShippingStatus
+  location    String?
+  description String?
+  occurredAt  DateTime       @map("occurred_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([shipmentId])
+  @@map("shipment_events")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REVIEWS & UGC DOMAIN
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Review {
+  id                 String       @id @default(uuid())
+  product            Product      @relation(fields: [productId], references: [id])
+  productId          String       @map("product_id")
+  user               User         @relation(fields: [userId], references: [id])
+  userId             String       @map("user_id")
+  rating             Int // 1-5
+  title              String?
+  body               String?
+  status             ReviewStatus @default(PENDING)
+  isVerifiedPurchase Boolean      @default(false) @map("is_verified_purchase")
+  helpfulCount       Int          @default(0) @map("helpful_count")
+  notHelpfulCount    Int          @default(0) @map("not_helpful_count")
+  moderatorNote      String?      @map("moderator_note")
+  deletedAt          DateTime?    @map("deleted_at")
+
+  // Relations
+  images ReviewImage[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([productId, userId]) // one review per user per product
+  @@index([productId])
+  @@index([userId])
+  @@index([status])
+  @@index([rating])
+  @@map("reviews")
+}
+
+model ReviewImage {
+  id        String  @id @default(uuid())
+  review    Review  @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  reviewId  String  @map("review_id")
+  url       String
+  altText   String? @map("alt_text")
+  sortOrder Int     @default(0) @map("sort_order")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([reviewId])
+  @@map("review_images")
+}
+
+model Wishlist {
+  id        String  @id @default(uuid())
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String  @map("user_id")
+  name      String  @default("My Wishlist")
+  isDefault Boolean @default(false) @map("is_default")
+  isPublic  Boolean @default(false) @map("is_public")
+
+  // Relations
+  items WishlistItem[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("wishlists")
+}
+
+model WishlistItem {
+  id         String          @id @default(uuid())
+  wishlist   Wishlist        @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  wishlistId String          @map("wishlist_id")
+  product    Product         @relation(fields: [productId], references: [id])
+  productId  String          @map("product_id")
+  variant    ProductVariant? @relation(fields: [variantId], references: [id])
+  variantId  String?         @map("variant_id")
+  notes      String?
+
+  addedAt DateTime @default(now()) @map("added_at")
+
+  @@unique([wishlistId, productId, variantId])
+  @@index([wishlistId])
+  @@index([productId])
+  @@map("wishlist_items")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ADMIN AUDIT LOG
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model AuditLog {
+  id          String      @id @default(uuid())
+  actor       User?       @relation("AuditActor", fields: [actorId], references: [id])
+  actorId     String?     @map("actor_id") // null = system action
+  actorEmail  String?     @map("actor_email") // snapshot in case user is deleted
+  action      AuditAction
+  entityType  String      @map("entity_type") // e.g. "Product", "Order", "User"
+  entityId    String?     @map("entity_id")
+  entityLabel String?     @map("entity_label") // human-readable snapshot e.g. product name
+  before      Json? // state before change (null for CREATE)
+  after       Json? // state after change (null for DELETE)
+  metadata    Json? // additional context (IP, user agent, etc.)
+  ipAddress   String?     @map("ip_address")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CMS & HOMEPAGE CONTENT DOMAIN
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Banner {
+  id             String    @id @default(uuid())
+  title          String
+  subtitle       String?
+  imageUrl       String    @map("image_url")
+  mobileImageUrl String?   @map("mobile_image_url")
+  linkUrl        String?   @map("link_url")
+  position       String    @default("hero") // hero, promo_top, promo_bottom, sidebar
+  sortOrder      Int       @default(0) @map("sort_order")
+  isActive       Boolean   @default(true) @map("is_active")
+  startsAt       DateTime? @map("starts_at")
+  endsAt         DateTime? @map("ends_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([position, isActive])
+  @@map("banners")
+}
+
+model HomepageSection {
+  id         String   @id @default(uuid())
+  title      String
+  sectionKey String   @unique @map("section_key") // e.g. "hero_carousel", "featured_products", "deals_of_day", "top_categories"
+  type       String   // banner_slider, product_grid, category_grid, text_block
+  config     Json?    // settings, query filters, item IDs
+  sortOrder  Int      @default(0) @map("sort_order")
+  isActive   Boolean  @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("homepage_sections")
+}
+

@@ -1,0 +1,16 @@
+{
+  "name": "@pc-platform/tests",
+  "version": "0.1.0",
+  "private": true,
+  "description": "End-to-end and integration tests for PC Platform",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.43.1",
+    "@pc-platform/types": "workspace:*"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "name": "pc-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Production-grade custom PC building and e-commerce platform",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel -r dev",
+    "dev:web": "pnpm --filter @pc-platform/web dev",
+    "dev:admin": "pnpm --filter @pc-platform/admin dev",
+    "dev:api": "pnpm --filter @pc-platform/api dev",
+    "dev:compatibility": "pnpm --filter @pc-platform/compatibility-engine dev",
+    "build": "pnpm -r build",
+    "build:web": "pnpm --filter @pc-platform/web build",
+    "build:admin": "pnpm --filter @pc-platform/admin build",
+    "build:api": "pnpm --filter @pc-platform/api build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "lint:fix": "pnpm -r lint:fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\" --ignore-path .gitignore",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\" --ignore-path .gitignore",
+    "test": "pnpm -r test",
+    "test:e2e": "pnpm --filter @pc-platform/tests test:e2e",
+    "db:migrate": "pnpm --filter @pc-platform/database migrate:dev",
+    "db:generate": "pnpm --filter @pc-platform/database generate",
+    "db:seed": "pnpm --filter @pc-platform/database seed",
+    "db:studio": "pnpm --filter @pc-platform/database studio",
+    "db:reset": "pnpm --filter @pc-platform/database migrate:reset",
+    "clean": "pnpm -r clean && rimraf node_modules",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.4.5"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yaml,yml}": [
+      "prettier --write"
+    ]
+  }
+}
