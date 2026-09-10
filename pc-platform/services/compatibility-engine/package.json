@@ -3,15 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "description": "PC Platform isolated compatibility rule engine service",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "scripts": {
     "dev": "nest start --watch",
     "build": "nest build",
     "start": "node dist/main",
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
+    "test": "node ../../node_modules/.pnpm/node_modules/jest/bin/jest.js",
+    "test:watch": "node ../../node_modules/.pnpm/node_modules/jest/bin/jest.js --watch",
+    "test:coverage": "node ../../node_modules/.pnpm/node_modules/jest/bin/jest.js --coverage",
     "clean": "rimraf dist"
   },
   "dependencies": {
@@ -29,8 +31,11 @@
     "@nestjs/cli": "^10.3.2",
     "@nestjs/schematics": "^10.1.1",
     "@nestjs/testing": "^10.3.8",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.12.7",
+    "jest": "^30.5.1",
     "rimraf": "^5.0.5",
+    "ts-jest": "^29.1.2",
     "typescript": "^5.4.5"
   }
 }

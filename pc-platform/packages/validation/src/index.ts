@@ -133,18 +133,23 @@ export const compatibilityComponentSchema = z.object({
   productId: idSchema,
   name: z.string().min(1),
   category: z.nativeEnum(ComponentCategory),
-  specs: z.record(z.union([z.string(), z.number(), z.boolean()])),
+  specs: z.record(z.any()),
 });
 
 export const buildComponentsSchema = z.object({
   cpu: compatibilityComponentSchema.optional(),
   motherboard: compatibilityComponentSchema.optional(),
+  cpuCooler: compatibilityComponentSchema.optional(),
+  cooling: compatibilityComponentSchema.optional(),
   ram: z.array(compatibilityComponentSchema).optional(),
   gpu: compatibilityComponentSchema.optional(),
   storage: z.array(compatibilityComponentSchema).optional(),
   psu: compatibilityComponentSchema.optional(),
   case: compatibilityComponentSchema.optional(),
-  cooling: compatibilityComponentSchema.optional(),
+  fans: z.array(compatibilityComponentSchema).optional(),
+  expansionCards: z.array(compatibilityComponentSchema).optional(),
+  monitor: compatibilityComponentSchema.optional(),
+  otherComponents: z.array(compatibilityComponentSchema).optional(),
 });
 
 export type BuildComponentsInput = z.infer<typeof buildComponentsSchema>;

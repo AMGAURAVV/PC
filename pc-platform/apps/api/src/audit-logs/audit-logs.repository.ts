@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from '@pc-platform/database';
-import { CreateAuditLogDto } from './dto/audit-log.dto';
+import type { DatabaseService } from '@pc-platform/database';
+
+import type { CreateAuditLogDto } from './dto/audit-log.dto';
 
 @Injectable()
 export class AuditLogsRepository {

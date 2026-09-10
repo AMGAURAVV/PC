@@ -1,37 +1,22 @@
-/**
- * Home Page — apps/web
- *
- * This is a Server Component. Data fetching happens here on the server.
- * No 'use client' directive — this renders on the server for SEO.
- */
 import type { Metadata } from 'next';
+import { constructMetadata } from '../lib/seo';
+import { HomePageClient } from './home-client';
 
-export const metadata: Metadata = {
-  title: 'PC Platform — Build Your Dream PC in India',
+export const metadata: Metadata = constructMetadata({
+  title: 'Custom PC Builder & Precision Hardware Telemetry',
   description:
-    'Browse thousands of PC components, use our compatibility checker, and build your perfect custom PC. Best prices in India.',
-};
+    'India\'s premier custom PC building platform. Configure hardware with guaranteed socket, PCIe, and thermal compatibility, track price history, and browse verified community builds.',
+  canonicalPath: '/',
+  keywords: [
+    'custom PC builder',
+    'buy gaming PC India',
+    'PC parts compatibility check',
+    'RTX 4090 PC build',
+    'best PC build 2026',
+    'custom rig configurator',
+  ],
+});
 
 export default function HomePage() {
-  return (
-    <main>
-      {/*
-       * UI components will be added here in the next phase.
-       * This file establishes the page structure and metadata.
-       *
-       * Planned sections:
-       *   - Hero (PC Builder CTA)
-       *   - Featured products
-       *   - Category quick-access
-       *   - Why PC Platform
-       *   - Testimonials
-       */}
-      <section className="flex min-h-screen flex-col items-center justify-center">
-        <h1 className="text-4xl font-bold">PC Platform</h1>
-        <p className="mt-4 text-muted-foreground">
-          Build system initializing — UI coming in next phase.
-        </p>
-      </section>
-    </main>
-  );
+  return <HomePageClient />;
 }

@@ -1,10 +1,14 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse as SwaggerResponse } from '@nestjs/swagger';
-import { InventoryService } from './inventory.service';
-import { CreateInventoryDto, UpdateInventoryDto, InventoryResponseDto } from './dto/inventory.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
-import { RolesGuard } from '../common/guards/roles.guard';
+
 import { Roles } from '../common/decorators/roles.decorator';
+import type { PaginationDto } from '../common/dto/pagination.dto';
+import { RolesGuard } from '../common/guards/roles.guard';
+
+import type { CreateInventoryDto, UpdateInventoryDto} from './dto/inventory.dto';
+import { InventoryResponseDto } from './dto/inventory.dto';
+import type { InventoryService } from './inventory.service';
+
 
 @ApiTags('inventory')
 @ApiBearerAuth('access-token')

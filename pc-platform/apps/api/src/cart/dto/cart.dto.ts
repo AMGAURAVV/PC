@@ -40,6 +40,21 @@ export class CartItemResponseDto {
 
   @ApiProperty()
   priceAtAdded!: number;
+
+  @ApiPropertyOptional()
+  productName?: string;
+
+  @ApiPropertyOptional()
+  brandName?: string;
+
+  @ApiPropertyOptional()
+  unitPrice?: number;
+
+  @ApiPropertyOptional()
+  totalPrice?: number;
+
+  @ApiPropertyOptional()
+  inStock?: boolean;
 }
 
 export class CartResponseDto {

@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+
 import { AdminPaginationDto } from './admin-common.dto';
 
 export enum AdminUserStatus {

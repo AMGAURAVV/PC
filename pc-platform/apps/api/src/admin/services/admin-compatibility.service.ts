@@ -1,12 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { DatabaseService } from '@pc-platform/database';
-import { AdminAuditService } from '../admin-audit.service';
-import {
+import type { DatabaseService } from '@pc-platform/database';
+
+import { PaginatedResponse } from '../../common/dto/response.dto';
+import type { AdminAuditService } from '../admin-audit.service';
+import type {
   CreateCompatibilityRuleDto,
   UpdateCompatibilityRuleDto,
   CompatibilityRuleFilterDto,
 } from '../dto/admin-compatibility.dto';
-import { PaginatedResponse } from '../../common/dto/response.dto';
 
 @Injectable()
 export class AdminCompatibilityService {

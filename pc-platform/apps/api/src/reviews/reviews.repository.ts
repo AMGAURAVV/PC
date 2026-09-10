@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from '@pc-platform/database';
-import { CreateReviewDto, UpdateReviewDto } from './dto/review.dto';
+import type { DatabaseService } from '@pc-platform/database';
+
+import type { CreateReviewDto, UpdateReviewDto } from './dto/review.dto';
 
 @Injectable()
 export class ReviewsRepository {

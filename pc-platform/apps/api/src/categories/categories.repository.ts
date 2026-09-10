@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from '@pc-platform/database';
-import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
+import type { DatabaseService } from '@pc-platform/database';
+
+import type { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
 
 @Injectable()
 export class CategoriesRepository {

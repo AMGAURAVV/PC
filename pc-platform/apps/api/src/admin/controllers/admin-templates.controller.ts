@@ -10,15 +10,16 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { RolesGuard } from '../../common/guards/roles.guard';
-import { Roles } from '../../common/decorators/roles.decorator';
+
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { AdminTemplatesService } from '../services/admin-templates.service';
-import {
+import { Roles } from '../../common/decorators/roles.decorator';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import type {
   CreateBuildTemplateDto,
   UpdateBuildTemplateDto,
   BuildTemplateFilterDto,
 } from '../dto/admin-template.dto';
+import type { AdminTemplatesService } from '../services/admin-templates.service';
 
 @ApiTags('admin-build-templates')
 @ApiBearerAuth('access-token')

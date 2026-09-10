@@ -9,30 +9,37 @@
  *   2. Import it here in the imports array
  */
 
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
-import { HttpModule } from '@nestjs/axios';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
-import { HealthModule } from './health/health.module';
+import { AdminModule } from './admin/admin.module';
+import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
-import { ProductsModule } from './products/products.module';
-import { CategoriesModule } from './categories/categories.module';
 import { BrandsModule } from './brands/brands.module';
-import { InventoryModule } from './inventory/inventory.module';
-import { PricesModule } from './prices/prices.module';
 import { BuildsModule } from './builds/builds.module';
 import { CartModule } from './cart/cart.module';
+import { CategoriesModule } from './categories/categories.module';
+import { CacheModule } from './common/cache/cache.module';
+import { CommunityModule } from './community/community.module';
+import { ConfiguratorModule } from './configurator/configurator.module';
+import { CouponsModule } from './coupons/coupons.module';
+import { DatabaseModule } from './database/database.module';
+import { HealthModule } from './health/health.module';
+import { InventoryModule } from './inventory/inventory.module';
 import { OrdersModule } from './orders/orders.module';
+import { PaymentsModule } from './payments/payments.module';
+import { PricesModule } from './prices/prices.module';
+import { ProductsModule } from './products/products.module';
+import { RecommendationsModule } from './recommendations/recommendations.module';
 import { ReviewsModule } from './reviews/reviews.module';
-import { WishlistModule } from './wishlist/wishlist.module';
 import { RolesModule } from './roles/roles.module';
 import { SearchModule } from './search/search.module';
-import { AdminModule } from './admin/admin.module';
-import { DatabaseModule } from './database/database.module';
-import { AuditLogsModule } from './audit-logs/audit-logs.module';
-import { CacheModule } from './common/cache/cache.module';
+import { StorageModule } from './storage/storage.module';
+import { UsersModule } from './users/users.module';
+import { WishlistModule } from './wishlist/wishlist.module';
 
 @Module({
   imports: [
@@ -81,6 +88,18 @@ import { CacheModule } from './common/cache/cache.module';
     SearchModule,
     AdminModule,
     AuditLogsModule,
+    ConfiguratorModule,
+    RecommendationsModule,
+    CouponsModule,
+    PaymentsModule,
+    StorageModule,
+    CommunityModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

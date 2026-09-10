@@ -1,59 +1,44 @@
-// ──────────────────────────────────────────────────────────────
-// @pc-platform/ui — Shared Component Library
-//
-// Wraps shadcn/ui components with platform-specific defaults.
-// No data fetching. No business logic. Pure presentation.
-//
-// To add a shadcn component:
-//   pnpm dlx shadcn-ui@latest add <component> --output-dir packages/ui/src/components
-// ──────────────────────────────────────────────────────────────
+export * from './lib/utils';
 
-// Utility
-export { cn } from './lib/utils';
+// Core interactive components
+export * from './components/button';
+export * from './components/badge';
+export * from './components/price';
+export * from './components/card';
+export * from './components/product-card';
+export * from './components/compare-tray';
+export * from './components/compare-modal';
 
-// Components (add as shadcn components are installed)
-// export { Button } from './components/button';
-// export { Card, CardContent, CardHeader, CardTitle } from './components/card';
-// export { Badge } from './components/badge';
-// export { Input } from './components/input';
-// export { Label } from './components/label';
-// export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/select';
-// export { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './components/dialog';
-// export { Separator } from './components/separator';
-// export { Toast, Toaster } from './components/toast';
+// Overlays & Containers
+export * from './components/modal';
+export * from './components/drawer';
+export * from './components/tabs';
+export * from './components/accordion';
 
-// Re-export icons used across the platform
-export {
-  ShoppingCart,
-  Search,
-  User,
-  Menu,
-  X,
-  ChevronDown,
-  ChevronRight,
-  Check,
-  AlertCircle,
-  AlertTriangle,
-  Info,
-  Star,
-  Heart,
-  Cpu,
-  HardDrive,
-  Monitor,
-  Zap,
-  Package,
-  Truck,
-  Shield,
-  ArrowRight,
-  ArrowLeft,
-  Plus,
-  Minus,
-  Trash2,
-  Edit,
-  Eye,
-  EyeOff,
-  Filter,
-  SortAsc,
-  Grid,
-  List,
-} from 'lucide-react';
+// Search & Filtering
+export * from './components/search';
+export * from './components/filter';
+export * from './components/pagination';
+export * from './components/breadcrumbs';
+
+// Feedback & States
+export * from './components/toast';
+export * from './components/loading';
+export * from './components/skeleton';
+export * from './components/empty-state';
+export * from './components/error-state';
+
+// Form Controls
+export * from './components/label';
+export * from './components/input';
+export * from './components/textarea';
+export * from './components/select';
+export * from './components/checkbox';
+export * from './components/radio-group';
+export * from './components/switch';
+export * from './components/slider';
+
+// Layout & Navigation
+export * from './components/header';
+export * from './components/mega-menu';
+export * from './components/footer';

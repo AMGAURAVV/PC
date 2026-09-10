@@ -141,46 +141,20 @@ No other changes required — the frontend and API are unaffected.
 
 ---
 
-## 9. CI/CD Pipeline Overview
+## 9. CI/CD Pipeline Architecture
 
-```yaml
-# .github/workflows/ci.yml (template)
-on: [push, pull_request]
+The platform uses a 7-stage GitHub Actions CI pipeline and dedicated continuous deployment workflows.
 
-jobs:
-  typecheck:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v3
-      - run: pnpm install
-      - run: pnpm typecheck
+Detailed architecture, security controls, and workflow topologies are documented in:
+👉 **[Deployment Architecture & CI/CD Infrastructure](./deployment-architecture.md)**
 
-  lint:
-    steps:
-      - run: pnpm lint
+### Available Workflows:
+- [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) — 7-stage CI pipeline (lint, typecheck, unit tests, integration tests, build, e2e tests, security checks)
+- [`.github/workflows/deploy-api.yml`](../../.github/workflows/deploy-api.yml) — API deployment with pre-rollout migrations
+- [`.github/workflows/deploy-web.yml`](../../.github/workflows/deploy-web.yml) — Storefront deployment with CDN cache purge
+- [`.github/workflows/deploy-admin.yml`](../../.github/workflows/deploy-admin.yml) — Admin backoffice deployment with ingress protections
+- [`.github/workflows/cd-orchestrator.yml`](../../.github/workflows/cd-orchestrator.yml) — Multi-environment CD orchestrator with manual production gates
 
-  test:
-    services:
-      postgres:
-        image: postgres:16
-        env: { POSTGRES_PASSWORD: postgres }
-    steps:
-      - run: pnpm db:migrate
-      - run: pnpm test
-
-  build:
-    needs: [typecheck, lint, test]
-    steps:
-      - run: pnpm build
-
-  deploy:
-    needs: build
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - name: Deploy to production
-        # Push Docker images, run migrate:deploy, restart containers
-```
 
 ---
 

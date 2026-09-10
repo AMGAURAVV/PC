@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+
 import { AdminPaginationDto } from './admin-common.dto';
 
 export class AdminCategoryFilterDto extends AdminPaginationDto {

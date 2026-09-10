@@ -1,11 +1,14 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse as SwaggerResponse, ApiQuery } from '@nestjs/swagger';
-import { BrandsService } from './brands.service';
-import { CreateBrandDto, UpdateBrandDto, BrandResponseDto } from './dto/brand.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
+
 import { Public } from '../common/decorators/public.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
+import type { PaginationDto } from '../common/dto/pagination.dto';
+import { RolesGuard } from '../common/guards/roles.guard';
+
+import type { BrandsService } from './brands.service';
+import type { CreateBrandDto, UpdateBrandDto} from './dto/brand.dto';
+import { BrandResponseDto } from './dto/brand.dto';
 
 @ApiTags('brands')
 @Controller('brands')

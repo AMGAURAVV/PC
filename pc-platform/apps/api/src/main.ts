@@ -15,23 +15,41 @@
  */
 
 import 'reflect-metadata';
-import { NestFactory, Reflector } from '@nestjs/core';
+import * as fs from 'fs';
+import * as path from 'path';
+
 import { Logger, ValidationPipe } from '@nestjs/common';
+import { NestFactory, Reflector } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
-import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { HttpCacheInterceptor } from './common/interceptors/http-cache.interceptor';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
 
 async function bootstrap(): Promise<void> {
   const logger = new Logger('Bootstrap');
 
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: ['error', 'warn', 'log'],
+  });
+
+  // ── Static Asset Serving (Object Storage Local Provider) ──────
+  const uploadsDir = path.isAbsolute(process.env['LOCAL_STORAGE_DIR'] || 'uploads')
+    ? (process.env['LOCAL_STORAGE_DIR'] || 'uploads')
+    : path.resolve(process.cwd(), process.env['LOCAL_STORAGE_DIR'] || 'uploads');
+
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+
+  app.useStaticAssets(uploadsDir, {
+    prefix: '/uploads/',
   });
 
   // ── Security Headers ──────────────────────────────────────────
@@ -81,6 +99,7 @@ async function bootstrap(): Promise<void> {
   app.useGlobalInterceptors(
     new LoggingInterceptor(),
     new ResponseTransformInterceptor(),
+    new HttpCacheInterceptor(),
   );
 
   // ── Global JWT Guard (all routes protected unless @Public()) ──

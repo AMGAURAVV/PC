@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from '@pc-platform/database';
-import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
-import { ProductFilterDto, ProductSortBy } from './dto/product-filter.dto';
-import { CreateProductVariantDto, UpdateProductVariantDto } from './dto/product-variant.dto';
-import { CreateProductImageDto } from './dto/product-image.dto';
+import type { DatabaseService } from '@pc-platform/database';
+
+import type { ProductFilterDto} from './dto/product-filter.dto';
+import { ProductSortBy } from './dto/product-filter.dto';
+import type { CreateProductImageDto } from './dto/product-image.dto';
+import type { CreateProductVariantDto, UpdateProductVariantDto } from './dto/product-variant.dto';
+import type { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 
 @Injectable()
 export class ProductsRepository {
@@ -64,6 +66,54 @@ export class ProductsRepository {
       fanSpec: true,
       monitorSpec: true,
       peripheralSpec: true,
+    };
+  }
+
+  /**
+   * Lightweight include query for catalog listings, searches, and multiple product lookups.
+   * Excludes the 11 component spec tables which are only needed on product detail view.
+   */
+  private get catalogProductIncludes() {
+    return {
+      brand: true,
+      categories: {
+        include: {
+          category: true,
+        },
+        orderBy: {
+          isPrimary: 'desc' as const,
+        },
+      },
+      images: {
+        orderBy: [
+          { isPrimary: 'desc' as const },
+          { sortOrder: 'asc' as const },
+        ],
+      },
+      variants: {
+        where: {
+          isActive: true,
+        },
+        include: {
+          prices: {
+            where: { isActive: true },
+            orderBy: { amount: 'asc' as const },
+          },
+          inventory: true,
+        },
+        orderBy: {
+          sortOrder: 'asc' as const,
+        },
+      },
+      prices: {
+        where: {
+          isActive: true,
+        },
+        orderBy: {
+          amount: 'asc' as const,
+        },
+      },
+      inventory: true,
     };
   }
 
@@ -329,7 +379,7 @@ export class ProductsRepository {
       skip: filters.skip,
       take: filters.limit,
       orderBy,
-      include: this.standardProductIncludes,
+      include: this.catalogProductIncludes,
     });
   }
 
@@ -358,7 +408,7 @@ export class ProductsRepository {
         id: { in: ids },
         deletedAt: null,
       },
-      include: this.standardProductIncludes,
+      include: this.catalogProductIncludes,
     });
   }
 
@@ -619,6 +669,7 @@ export class ProductsRepository {
         productId,
         ...(data.variantId ? { variantId: data.variantId } : {}),
         url: data.url,
+        ...(data.storageKey ? { storageKey: data.storageKey } : {}),
         ...(data.altText ? { altText: data.altText } : {}),
         isPrimary: data.isPrimary ?? false,
         sortOrder: data.sortOrder ?? 0,

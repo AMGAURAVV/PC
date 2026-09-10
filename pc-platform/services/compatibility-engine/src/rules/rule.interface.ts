@@ -1,14 +1,32 @@
-import type { BuildComponents, CompatibilityIssue, CompatibilityWarning } from '@pc-platform/types';
+import type { CompatibilityCategory, CompatibilityIssueItem, CompatibilityStatus } from '@pc-platform/types';
 
-export interface RuleResult {
+import type { RuleContext } from '../parser/rule-context';
+
+export interface RuleEvaluationResult {
   passed: boolean;
-  issues: CompatibilityIssue[];
-  warnings: CompatibilityWarning[];
+  status?: CompatibilityStatus;
+  issues: CompatibilityIssueItem[];
+  warnings: CompatibilityIssueItem[];
+  info?: CompatibilityIssueItem[];
 }
 
 export interface CompatibilityRule {
-  id: string;
-  name: string;
-  description: string;
-  check(components: BuildComponents): RuleResult;
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly category: CompatibilityCategory;
+  readonly priority: number;
+
+  /**
+   * Fast condition pre-check.
+   * Determines if the rule should evaluate for the current build.
+   * If false, this rule is skipped in the evaluation pipeline.
+   */
+  condition(context: RuleContext): boolean;
+
+  /**
+   * Evaluates compatibility against structured component specifications.
+   * Does NOT assume compatibility from marketing names.
+   */
+  evaluate(context: RuleContext): RuleEvaluationResult;
 }

@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
+
 import { DateRangeFilterDto } from './admin-common.dto';
 
 export class AdminAuditLogFilterDto extends DateRangeFilterDto {

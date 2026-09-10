@@ -1,5 +1,7 @@
-import { Reflector } from '@nestjs/core';
-import { ExecutionContext, ForbiddenException } from '@nestjs/common';
+import type { ExecutionContext} from '@nestjs/common';
+import { ForbiddenException } from '@nestjs/common';
+import type { Reflector } from '@nestjs/core';
+
 import { RolesGuard } from './roles.guard';
 
 describe('RolesGuard', () => {

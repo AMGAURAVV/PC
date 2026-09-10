@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CategoriesRepository } from './categories.repository';
-import { CreateCategoryDto, UpdateCategoryDto, CategoryResponseDto } from './dto/category.dto';
-import { CacheService } from '../common/cache/cache.service';
+
+import type { CacheService } from '../common/cache/cache.service';
+
+import type { CategoriesRepository } from './categories.repository';
+import type { CreateCategoryDto, UpdateCategoryDto, CategoryResponseDto } from './dto/category.dto';
 
 function generateSlug(text: string): string {
   return text
@@ -9,8 +11,8 @@ function generateSlug(text: string): string {
     .toLowerCase()
     .trim()
     .replace(/\s+/g, '-')
-    .replace(/[^\w\-]+/g, '')
-    .replace(/\-\-+/g, '-');
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-');
 }
 
 @Injectable()

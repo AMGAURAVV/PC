@@ -1,12 +1,16 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse as SwaggerResponse } from '@nestjs/swagger';
-import { ReviewsService } from './reviews.service';
-import { CreateReviewDto, UpdateReviewDto, ReviewResponseDto } from './dto/review.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
-import { RolesGuard } from '../common/guards/roles.guard';
+
+
+import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { Public } from '../common/decorators/public.decorator';
+import type { PaginationDto } from '../common/dto/pagination.dto';
+import { RolesGuard } from '../common/guards/roles.guard';
+
+import { ReviewResponseDto } from './dto/review.dto';
+import type { CreateReviewDto, UpdateReviewDto} from './dto/review.dto';
+import type { ReviewsService } from './reviews.service';
 
 @ApiTags('reviews')
 @Controller('reviews')
@@ -51,7 +55,9 @@ export class ReviewsController {
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Delete a review' })
   remove(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
-    const isAdmin = user.roles.includes('admin') || user.roles.includes('super_admin');
+    const isAdmin = (user.roles ?? []).some(
+      (r) => r.toUpperCase() === 'ADMIN' || r.toUpperCase() === 'SUPER_ADMIN',
+    );
     return this.reviewsService.remove(id, user.sub, isAdmin);
   }
 }

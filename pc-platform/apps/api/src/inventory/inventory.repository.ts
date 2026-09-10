@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from '@pc-platform/database';
-import { CreateInventoryDto, UpdateInventoryDto } from './dto/inventory.dto';
+import type { DatabaseService } from '@pc-platform/database';
+
+import type { CreateInventoryDto, UpdateInventoryDto } from './dto/inventory.dto';
 
 @Injectable()
 export class InventoryRepository {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from '@pc-platform/database';
+import type { DatabaseService } from '@pc-platform/database';
 
 @Injectable()
 export class AdminDashboardService {

@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DatabaseService } from '@pc-platform/database';
-import { AdminAuditLogFilterDto } from '../dto/admin-audit-filter.dto';
+import type { DatabaseService } from '@pc-platform/database';
+
 import { PaginatedResponse } from '../../common/dto/response.dto';
+import type { AdminAuditLogFilterDto } from '../dto/admin-audit-filter.dto';
 
 @Injectable()
 export class AdminAuditLogsService {

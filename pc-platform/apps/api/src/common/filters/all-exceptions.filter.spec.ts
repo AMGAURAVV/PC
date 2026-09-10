@@ -1,6 +1,8 @@
-import { ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
-import { AllExceptionsFilter } from './all-exceptions.filter';
+import type { ArgumentsHost} from '@nestjs/common';
+import { HttpException, HttpStatus } from '@nestjs/common';
 import { Prisma } from '@pc-platform/database';
+
+import { AllExceptionsFilter } from './all-exceptions.filter';
 
 describe('AllExceptionsFilter', () => {
   let filter: AllExceptionsFilter;

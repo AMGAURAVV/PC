@@ -10,6 +10,7 @@ import {
   IsUUID,
   Min,
 } from 'class-validator';
+
 import { ProductImageResponseDto } from './product-image.dto';
 import { ProductVariantResponseDto } from './product-variant.dto';
 

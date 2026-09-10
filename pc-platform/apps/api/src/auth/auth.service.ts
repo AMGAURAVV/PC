@@ -1,3 +1,5 @@
+import * as crypto from 'crypto';
+
 import {
   Injectable,
   UnauthorizedException,
@@ -5,22 +7,22 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import * as bcrypt from 'bcryptjs';
-import * as crypto from 'crypto';
-
-import { AuthRepository } from './auth.repository';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import { AuthResponseDto, UserProfileDto } from './dto/auth-response.dto';
-import { JwtPayload } from './interfaces/jwt-payload.interface';
-import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import type { ConfigService } from '@nestjs/config';
+import type { JwtService } from '@nestjs/jwt';
 import { AuditAction, UserStatus } from '@pc-platform/database';
+import * as bcrypt from 'bcryptjs';
+
+import type { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { Role } from '../common/enums/role.enum';
-import { VerifyEmailDto, ResendVerificationDto } from './dto/email-verification.dto';
-import { ForgotPasswordDto, ResetPasswordDto } from './dto/password-reset.dto';
-import { GoogleAuthDto } from './dto/google-auth.dto';
+
+import type { AuthRepository } from './auth.repository';
+import type { AuthResponseDto, UserProfileDto } from './dto/auth-response.dto';
+import type { VerifyEmailDto, ResendVerificationDto } from './dto/email-verification.dto';
+import type { GoogleAuthDto } from './dto/google-auth.dto';
+import { LoginDto } from './dto/login.dto';
+import type { ForgotPasswordDto, ResetPasswordDto } from './dto/password-reset.dto';
+import type { RegisterDto } from './dto/register.dto';
+import type { JwtPayload } from './interfaces/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
@@ -578,8 +580,18 @@ export class AuthService {
   }
 
   private getJwtSecret(): string {
+    const secret = this.configService.get<string>('JWT_SECRET');
+    const isProd = this.configService.get<string>('NODE_ENV') === 'production';
+    if (
+      isProd &&
+      (!secret ||
+        secret.includes('dev-environment') ||
+        secret.includes('change-in-production'))
+    ) {
+      throw new Error('FATAL SECURITY ERROR: Insecure JWT_SECRET in production environment');
+    }
     return (
-      this.configService.get<string>('JWT_SECRET') ??
+      secret ??
       'super-secret-jwt-token-key-for-pc-platform-dev-environment-12345'
     );
   }
@@ -630,7 +642,7 @@ export class AuthService {
   private async verifyGoogleIdToken(
     idToken: string,
   ): Promise<{ email: string; firstName: string; lastName: string; googleId: string }> {
-    // In test / development or without external connectivity, handle mock or decode safely
+    // In test / development or without external connectivity, handle mock or test tokens safely
     if (idToken.startsWith('mock-google-') || process.env['NODE_ENV'] === 'test') {
       return {
         email: 'google-user@example.com',
@@ -641,18 +653,41 @@ export class AuthService {
     }
 
     try {
-      const decoded: any = this.jwtService.decode(idToken);
-      if (!decoded || !decoded.email) {
-        throw new UnauthorizedException('Invalid Google token claims');
+      const response = await fetch(
+        `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`,
+      );
+      if (!response.ok) {
+        throw new UnauthorizedException('Google ID token verification failed with Google auth servers');
       }
+      const tokenInfo: any = await response.json();
+
+      const expectedAud = this.configService.get<string>('GOOGLE_CLIENT_ID');
+      if (expectedAud && tokenInfo.aud !== expectedAud) {
+        throw new UnauthorizedException('Google token audience mismatch');
+      }
+
+      if (
+        tokenInfo.iss !== 'accounts.google.com' &&
+        tokenInfo.iss !== 'https://accounts.google.com'
+      ) {
+        throw new UnauthorizedException('Invalid Google token issuer');
+      }
+
+      if (!tokenInfo.email || tokenInfo.email_verified === 'false') {
+        throw new UnauthorizedException('Google email not verified');
+      }
+
       return {
-        email: decoded.email,
-        firstName: decoded.given_name || 'Google',
-        lastName: decoded.family_name || 'User',
-        googleId: decoded.sub || 'google-sub',
+        email: tokenInfo.email,
+        firstName: tokenInfo.given_name || 'Google',
+        lastName: tokenInfo.family_name || 'User',
+        googleId: tokenInfo.sub,
       };
-    } catch {
-      throw new UnauthorizedException('Invalid Google ID token');
+    } catch (err: any) {
+      if (err instanceof UnauthorizedException) {
+        throw err;
+      }
+      throw new UnauthorizedException('Failed to verify Google ID token');
     }
   }
 

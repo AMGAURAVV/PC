@@ -1,11 +1,19 @@
 import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse as SwaggerResponse } from '@nestjs/swagger';
-import { PricesService } from './prices.service';
-import { CreatePriceDto, PriceResponseDto } from './dto/price.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
+
 import { Public } from '../common/decorators/public.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
+import { RolesGuard } from '../common/guards/roles.guard';
+
+import type {
+  CreatePriceDto,
+  PriceHistoryQueryDto} from './dto/price.dto';
+import {
+  PriceResponseDto,
+  ProductPriceSummaryResponseDto,
+} from './dto/price.dto';
+import type { PricesService } from './prices.service';
+
 
 @ApiTags('prices')
 @Controller('prices')
@@ -21,18 +29,36 @@ export class PricesController {
     return this.pricesService.create(createPriceDto);
   }
 
+  @Get('product/:productId/summary')
+  @Public()
+  @ApiOperation({ summary: 'Get current, lowest, highest price and complete price history for a product' })
+  @SwaggerResponse({ status: 200, type: ProductPriceSummaryResponseDto })
+  getPriceSummary(
+    @Param('productId') productId: string,
+    @Query() query: PriceHistoryQueryDto,
+  ): Promise<ProductPriceSummaryResponseDto> {
+    return this.pricesService.getPriceSummary(productId, query);
+  }
+
   @Get('product/:productId/history')
   @Public()
-  @ApiOperation({ summary: 'Get price history for a product' })
-  findAllByProduct(@Param('productId') productId: string, @Query() query: PaginationDto) {
-    return this.pricesService.findAllByProduct(productId, query);
+  @ApiOperation({ summary: 'Get price history and summary metrics for a product' })
+  @SwaggerResponse({ status: 200, type: ProductPriceSummaryResponseDto })
+  findAllByProduct(
+    @Param('productId') productId: string,
+    @Query() query: PriceHistoryQueryDto,
+  ): Promise<ProductPriceSummaryResponseDto> {
+    return this.pricesService.getPriceSummary(productId, query);
   }
 
   @Get('product/:productId/current')
   @Public()
   @ApiOperation({ summary: 'Get current active price for a product' })
   @SwaggerResponse({ status: 200, type: PriceResponseDto })
-  findCurrentByProduct(@Param('productId') productId: string) {
-    return this.pricesService.findCurrentByProduct(productId);
+  findCurrentByProduct(
+    @Param('productId') productId: string,
+    @Query('variantId') variantId?: string,
+  ) {
+    return this.pricesService.findCurrentByProduct(productId, variantId);
   }
 }

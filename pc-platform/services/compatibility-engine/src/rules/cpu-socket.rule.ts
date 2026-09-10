@@ -1,46 +1,63 @@
-import type { BuildComponents } from '@pc-platform/types';
-import type { CompatibilityRule, RuleResult } from './rule.interface';
+import { CompatibilityCategory } from '@pc-platform/types';
 
-/**
- * CPU Socket Rule
- *
- * Ensures the CPU socket matches the motherboard socket.
- *
- * Examples:
- *   - AMD Ryzen 7000 (AM5) + ASUS Z690 (LGA1700) → ERROR
- *   - AMD Ryzen 7000 (AM5) + MSI X670E (AM5) → PASS
- *
- * Tests: cpu-socket.rule.spec.ts
- */
+import type { RuleContext } from '../parser/rule-context';
+
+import type { CompatibilityRule, RuleEvaluationResult } from './rule.interface';
+
 export const cpuSocketRule: CompatibilityRule = {
   id: 'cpu-socket',
   name: 'CPU Socket Compatibility',
-  description: 'Ensures the CPU socket type matches the motherboard socket type',
+  description: 'Ensures the CPU physical socket type matches the motherboard socket',
+  category: CompatibilityCategory.SOCKET,
+  priority: 10,
 
-  check(components: BuildComponents): RuleResult {
-    const { cpu, motherboard } = components;
+  condition(ctx: RuleContext): boolean {
+    return !!ctx.normalized.cpu && !!ctx.normalized.motherboard;
+  },
 
-    // Can't check without both components
-    if (!cpu || !motherboard) {
-      return { passed: true, issues: [], warnings: [] };
-    }
+  evaluate(ctx: RuleContext): RuleEvaluationResult {
+    const cpu = ctx.normalized.cpu!;
+    const mb = ctx.normalized.motherboard!;
 
-    const cpuSocket = cpu.specs['socketType'] as string | undefined;
-    const mbSocket = motherboard.specs['socketType'] as string | undefined;
-
-    if (!cpuSocket || !mbSocket) {
-      return { passed: true, issues: [], warnings: [] };
-    }
-
-    if (cpuSocket !== mbSocket) {
+    // Check for missing data
+    if (!cpu.socketType || !mb.socketType) {
       return {
         passed: false,
+        status: 'unknown',
+        issues: [
+          {
+            severity: 'unknown',
+            category: CompatibilityCategory.SOCKET,
+            ruleId: 'cpu-socket',
+            rule: 'cpu-socket',
+            title: 'Unknown Socket Compatibility (Missing Data)',
+            explanation: `Unable to verify CPU and motherboard socket compatibility because specification data is missing (CPU socket: ${cpu.socketType ?? 'missing'}, Motherboard socket: ${mb.socketType ?? 'missing'}).`,
+            message: `Unable to verify socket compatibility due to missing data.`,
+            affectedComponents: [cpu.productId, mb.productId],
+            components: [cpu.productId, mb.productId],
+            suggestedResolution: 'Verify and populate socket specifications for both the CPU and the motherboard.',
+          },
+        ],
+        warnings: [],
+      };
+    }
+
+    if (cpu.socketType !== mb.socketType) {
+      return {
+        passed: false,
+        status: 'incompatible',
         issues: [
           {
             severity: 'error',
+            category: CompatibilityCategory.SOCKET,
+            ruleId: 'cpu-socket',
             rule: 'cpu-socket',
-            message: `${cpu.name} requires socket ${cpuSocket}, but ${motherboard.name} has socket ${mbSocket}. These are not compatible.`,
-            components: [cpu.productId, motherboard.productId],
+            title: 'CPU and Motherboard Socket Mismatch',
+            explanation: `${cpu.name} requires socket ${cpu.socketType}, but ${mb.name} features socket ${mb.socketType}. The processor cannot physically mount into this motherboard.`,
+            message: `${cpu.name} (${cpu.socketType}) is incompatible with ${mb.name} (${mb.socketType}).`,
+            affectedComponents: [cpu.productId, mb.productId],
+            components: [cpu.productId, mb.productId],
+            suggestedResolution: `Choose a motherboard with a ${cpu.socketType} socket, or choose a CPU compatible with ${mb.socketType}.`,
           },
         ],
         warnings: [],

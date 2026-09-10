@@ -1,0 +1,317 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_ENV: test
+  CI: true
+  PNPM_VERSION: 9.1.0
+  NODE_VERSION: 20.x
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # Stage 1: Linting & Code Style
+  # ─────────────────────────────────────────────────────────────
+  lint:
+    name: Lint & Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check code formatting (Prettier)
+        run: pnpm format:check
+
+      - name: Run ESLint
+        run: pnpm lint
+
+  # ─────────────────────────────────────────────────────────────
+  # Stage 2: Static Type Checking
+  # ─────────────────────────────────────────────────────────────
+  typecheck:
+    name: TypeScript Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run typecheck across all packages
+        run: pnpm typecheck
+
+  # ─────────────────────────────────────────────────────────────
+  # Stage 3: Unit Tests (Engines, Packages, Services, API)
+  # ─────────────────────────────────────────────────────────────
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test Validation Package
+        run: pnpm --filter @pc-platform/validation test
+
+      - name: Test Compatibility Engine
+        run: pnpm --filter @pc-platform/compatibility-engine test
+
+      - name: Test Recommendation Engine
+        run: pnpm --filter @pc-platform/recommendation-engine test
+
+      - name: Test API Services & Unit Specs
+        run: pnpm --filter @pc-platform/api test -- --testPathIgnorePatterns="integration"
+        env:
+          JWT_SECRET: ci-unit-test-secret-min-32-chars-dummy
+          JWT_REFRESH_SECRET: ci-unit-test-refresh-secret-min-32-chars
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/dummy?schema=public"
+
+  # ─────────────────────────────────────────────────────────────
+  # Stage 4: Integration Tests (API Endpoints, DB, External Mocks)
+  # ─────────────────────────────────────────────────────────────
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgrespassword
+          POSTGRES_DB: pc_platform_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Mask sensitive environment tokens
+        run: |
+          echo "::add-mask::postgrespassword"
+          echo "::add-mask::ci-test-mock-secret-key-32-chars-long"
+
+      - name: Run Database Migrations
+        run: pnpm --filter @pc-platform/database db:push || pnpm --filter @pc-platform/database generate
+        env:
+          DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/pc_platform_test?schema=public
+
+      - name: Run API Integration Tests
+        run: pnpm --filter @pc-platform/api test
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/pc_platform_test?schema=public
+          JWT_SECRET: ci-test-mock-secret-key-32-chars-long
+          JWT_REFRESH_SECRET: ci-test-mock-secret-key-32-chars-long-refresh
+          RAZORPAY_KEY_ID: rzp_test_mock_id
+          RAZORPAY_KEY_SECRET: rzp_test_mock_secret
+          RAZORPAY_WEBHOOK_SECRET: rzp_test_webhook_secret
+
+  # ─────────────────────────────────────────────────────────────
+  # Stage 5: Application Builds (web, admin, api)
+  # ─────────────────────────────────────────────────────────────
+  build:
+    name: Build Applications (web, admin, api)
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Core Libraries
+        run: |
+          pnpm --filter @pc-platform/types build
+          pnpm --filter @pc-platform/validation build
+          pnpm --filter @pc-platform/api-client build
+          pnpm --filter @pc-platform/ui build
+
+      - name: Build API Application
+        run: pnpm --filter @pc-platform/api build
+
+      - name: Build Web Application
+        run: pnpm --filter @pc-platform/web build
+        env:
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Build Admin Application
+        run: pnpm --filter @pc-platform/admin build
+        env:
+          NEXT_PUBLIC_ADMIN_URL: http://localhost:3002
+          NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+          NEXT_TELEMETRY_DISABLED: 1
+
+  # ─────────────────────────────────────────────────────────────
+  # Stage 6: Playwright E2E Tests
+  # ─────────────────────────────────────────────────────────────
+  e2e-tests:
+    name: End-to-End Tests (Playwright)
+    runs-on: ubuntu-latest
+    needs: [build, unit-tests]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright E2E Tests
+        run: pnpm --filter @pc-platform/tests test:e2e
+        env:
+          CI: true
+          NODE_ENV: test
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
+          RAZORPAY_KEY_ID: rzp_test_mock_e2e_id
+          RAZORPAY_KEY_SECRET: rzp_test_mock_e2e_secret
+
+      - name: Upload Playwright Test Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: tests/playwright-report/
+          retention-days: 14
+
+  # ─────────────────────────────────────────────────────────────
+  # Stage 7: Security Checks (Audits & Secret Scanning)
+  # ─────────────────────────────────────────────────────────────
+  security-checks:
+    name: Security Audits & Secret Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Audit Dependencies (pnpm audit)
+        run: |
+          echo "Scanning dependencies for high/critical known vulnerabilities..."
+          pnpm audit --audit-level=high || echo "pnpm audit completed with advisories to review"
+
+      - name: Run Secret Scanning (TruffleHog OSS)
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified=false
+        continue-on-error: true
+
+      - name: Enforce Secret Redaction Verification
+        run: |
+          echo "Checking repository commits for raw exposed private keys or tokens..."
+          # Scan for accidental live Razorpay key pattern or unmasked private keys
+          ! grep -rE "rzp_live_[a-zA-Z0-9]{14,}" . --exclude-dir={.git,node_modules,.next,dist} || (echo "CRITICAL: Live Razorpay key discovered in code!" && exit 1)
+          echo "Secret protection check passed."

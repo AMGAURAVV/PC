@@ -12,16 +12,17 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { RolesGuard } from '../../common/guards/roles.guard';
-import { Roles } from '../../common/decorators/roles.decorator';
+
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { AdminUsersService } from '../services/admin-users.service';
-import {
+import { Roles } from '../../common/decorators/roles.decorator';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import type {
   AdminUserFilterDto,
   AdminUpdateUserStatusDto,
   AdminAssignRolesDto,
   BulkUserStatusDto,
 } from '../dto/admin-user.dto';
+import type { AdminUsersService } from '../services/admin-users.service';
 
 @ApiTags('admin-users')
 @ApiBearerAuth('access-token')
@@ -54,7 +55,7 @@ export class AdminUsersController {
   }
 
   @Patch(':id/roles')
-  @ApiOperation({ summary: 'Assign security roles to user (admin, super_admin, customer, etc.)' })
+  @ApiOperation({ summary: 'Assign security roles to user (Admin and Super Admin)' })
   assignRoles(
     @Param('id') id: string,
     @CurrentUser() actor: any,

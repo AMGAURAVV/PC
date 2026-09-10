@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { BrandsRepository } from './brands.repository';
-import { CreateBrandDto, UpdateBrandDto, BrandResponseDto } from './dto/brand.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
+
+import type { CacheService } from '../common/cache/cache.service';
+import type { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginatedResponse } from '../common/dto/response.dto';
-import { CacheService } from '../common/cache/cache.service';
+
+import type { BrandsRepository } from './brands.repository';
+import type { CreateBrandDto, UpdateBrandDto, BrandResponseDto } from './dto/brand.dto';
 
 function generateSlug(text: string): string {
   return text
@@ -11,8 +13,8 @@ function generateSlug(text: string): string {
     .toLowerCase()
     .trim()
     .replace(/\s+/g, '-')
-    .replace(/[^\w\-]+/g, '')
-    .replace(/\-\-+/g, '-');
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-');
 }
 
 @Injectable()

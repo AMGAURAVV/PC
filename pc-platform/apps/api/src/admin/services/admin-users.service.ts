@@ -1,14 +1,20 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { DatabaseService } from '@pc-platform/database';
-import { AdminAuditService } from '../admin-audit.service';
 import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import type { DatabaseService } from '@pc-platform/database';
+
+import { PaginatedResponse } from '../../common/dto/response.dto';
+import type { AdminAuditService } from '../admin-audit.service';
+import { BulkOperationResultDto } from '../dto/admin-common.dto';
+import type {
   AdminUserFilterDto,
   AdminUpdateUserStatusDto,
   AdminAssignRolesDto,
   BulkUserStatusDto,
 } from '../dto/admin-user.dto';
-import { BulkOperationResultDto } from '../dto/admin-common.dto';
-import { PaginatedResponse } from '../../common/dto/response.dto';
 
 @Injectable()
 export class AdminUsersService {
@@ -113,6 +119,27 @@ export class AdminUsersService {
   async assignRoles(id: string, dto: AdminAssignRolesDto, actor?: any) {
     const current = await this.findOne(id);
 
+    const actorId = actor?.sub || actor?.id;
+    if (actorId && actorId === id) {
+      throw new ForbiddenException('Administrators cannot modify their own roles');
+    }
+
+    const actorRoles: string[] = (actor?.roles || []).map((r: string) => r.toUpperCase());
+    const isSuperAdmin = actorRoles.includes('SUPER_ADMIN');
+
+    const targetHasSuperAdmin = current.userRoles.some(
+      (ur: any) => ur.role.name.toUpperCase() === 'SUPER_ADMIN',
+    );
+    const assigningSuperAdmin = dto.roleNames.some(
+      (n: string) => n.toUpperCase() === 'SUPER_ADMIN',
+    );
+
+    if ((targetHasSuperAdmin || assigningSuperAdmin) && !isSuperAdmin) {
+      throw new ForbiddenException(
+        'Only super administrators can manage the super_admin role',
+      );
+    }
+
     // Look up roles by name
     const roles = await this.db.role.findMany({
       where: { name: { in: dto.roleNames } },
@@ -152,6 +179,24 @@ export class AdminUsersService {
 
   async delete(id: string, actor?: any, force: boolean = false) {
     const current = await this.findOne(id);
+
+    const actorId = actor?.sub || actor?.id;
+    if (actorId && actorId === id) {
+      throw new BadRequestException('Administrators cannot delete their own account');
+    }
+
+    const actorRoles: string[] = (actor?.roles || []).map((r: string) => r.toUpperCase());
+    const isSuperAdmin = actorRoles.includes('SUPER_ADMIN');
+
+    const targetHasSuperAdmin = current.userRoles.some(
+      (ur: any) => ur.role.name.toUpperCase() === 'SUPER_ADMIN',
+    );
+
+    if (targetHasSuperAdmin && !isSuperAdmin) {
+      throw new ForbiddenException(
+        'Only super administrators can delete a super administrator account',
+      );
+    }
 
     // Safe destructive check: Check for existing orders
     const orderCount = await this.db.order.count({ where: { userId: id } });

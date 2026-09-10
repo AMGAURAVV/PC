@@ -1,9 +1,13 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse as SwaggerResponse } from '@nestjs/swagger';
-import { RolesService } from './roles.service';
-import { CreateRoleDto, UpdateRoleDto, RoleResponseDto } from './dto/role.dto';
-import { RolesGuard } from '../common/guards/roles.guard';
+
 import { Roles } from '../common/decorators/roles.decorator';
+import { RolesGuard } from '../common/guards/roles.guard';
+
+import type { CreateRoleDto, UpdateRoleDto} from './dto/role.dto';
+import { RoleResponseDto } from './dto/role.dto';
+import type { RolesService } from './roles.service';
+
 
 @ApiTags('roles')
 @ApiBearerAuth('access-token')

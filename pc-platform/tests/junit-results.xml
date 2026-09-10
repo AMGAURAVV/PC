@@ -1,0 +1,494 @@
+<testsuites id="" name="" tests="20" failures="0" skipped="0" errors="20" time="3.510281">
+<testsuite name="auth.spec.ts" timestamp="2026-09-10T18:12:52.242Z" hostname="Desktop Chrome" tests="2" failures="0" skipped="0" time="0.012" errors="2">
+<testcase name="E2E: Authentication Journey › should allow a new customer to register" classname="auth.spec.ts" time="0.005">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\auth-E2E-Authentication-Jo-6c0f2--a-new-customer-to-register-Desktop-Chrome\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe" type="Error">
+<![CDATA[  [Desktop Chrome] › auth.spec.ts:4:7 › E2E: Authentication Journey › should allow a new customer to register 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\auth-E2E-Authentication-Jo-6c0f2--a-new-customer-to-register-Desktop-Chrome\error-context.md
+]]>
+</error>
+</testcase>
+<testcase name="E2E: Authentication Journey › should allow an existing customer to log in" classname="auth.spec.ts" time="0.007">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\auth-E2E-Authentication-Jo-7de15-existing-customer-to-log-in-Desktop-Chrome\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe" type="Error">
+<![CDATA[  [Desktop Chrome] › auth.spec.ts:61:7 › E2E: Authentication Journey › should allow an existing customer to log in 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\auth-E2E-Authentication-Jo-7de15-existing-customer-to-log-in-Desktop-Chrome\error-context.md
+]]>
+</error>
+</testcase>
+</testsuite>
+<testsuite name="builder.spec.ts" timestamp="2026-09-10T18:12:52.242Z" hostname="Desktop Chrome" tests="1" failures="0" skipped="0" time="0.007" errors="1">
+<testcase name="E2E: PC Builder &amp; Compatibility Engine Journey › complete flow: create build, select components, receive compatibility warning, save, share, add to cart" classname="builder.spec.ts" time="0.007">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\builder-E2E-PC-Builder-Com-58a00-ning-save-share-add-to-cart-Desktop-Chrome\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe" type="Error">
+<![CDATA[  [Desktop Chrome] › builder.spec.ts:112:7 › E2E: PC Builder & Compatibility Engine Journey › complete flow: create build, select components, receive compatibility warning, save, share, add to cart 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\builder-E2E-PC-Builder-Com-58a00-ning-save-share-add-to-cart-Desktop-Chrome\error-context.md
+]]>
+</error>
+</testcase>
+</testsuite>
+<testsuite name="checkout.spec.ts" timestamp="2026-09-10T18:12:52.242Z" hostname="Desktop Chrome" tests="1" failures="0" skipped="0" time="0.007" errors="1">
+<testcase name="E2E: Cart &amp; Checkout Journey (Mock Payment Safety Guarantee) › should review cart calculations, proceed through 3-step checkout, and place order with mock payment" classname="checkout.spec.ts" time="0.007">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\checkout-E2E-Cart-Checkout-e9e0e-ace-order-with-mock-payment-Desktop-Chrome\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe" type="Error">
+<![CDATA[  [Desktop Chrome] › checkout.spec.ts:4:7 › E2E: Cart & Checkout Journey (Mock Payment Safety Guarantee) › should review cart calculations, proceed through 3-step checkout, and place order with mock payment 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\checkout-E2E-Cart-Checkout-e9e0e-ace-order-with-mock-payment-Desktop-Chrome\error-context.md
+]]>
+</error>
+</testcase>
+</testsuite>
+<testsuite name="products.spec.ts" timestamp="2026-09-10T18:12:52.242Z" hostname="Desktop Chrome" tests="1" failures="0" skipped="0" time="0.005" errors="1">
+<testcase name="E2E: Catalog Browsing &amp; Search Journey › should browse products catalog, filter by category, and search" classname="products.spec.ts" time="0.005">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\products-E2E-Catalog-Brows-2aeaa-lter-by-category-and-search-Desktop-Chrome\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe" type="Error">
+<![CDATA[  [Desktop Chrome] › products.spec.ts:4:7 › E2E: Catalog Browsing & Search Journey › should browse products catalog, filter by category, and search 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\products-E2E-Catalog-Brows-2aeaa-lter-by-category-and-search-Desktop-Chrome\error-context.md
+]]>
+</error>
+</testcase>
+</testsuite>
+<testsuite name="auth.spec.ts" timestamp="2026-09-10T18:12:52.242Z" hostname="Desktop Firefox" tests="2" failures="0" skipped="0" time="0.012" errors="2">
+<testcase name="E2E: Authentication Journey › should allow a new customer to register" classname="auth.spec.ts" time="0.006">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\auth-E2E-Authentication-Jo-6c0f2--a-new-customer-to-register-Desktop-Firefox\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\firefox-1543\firefox\firefox.exe" type="Error">
+<![CDATA[  [Desktop Firefox] › auth.spec.ts:4:7 › E2E: Authentication Journey › should allow a new customer to register 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\firefox-1543\firefox\firefox.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\auth-E2E-Authentication-Jo-6c0f2--a-new-customer-to-register-Desktop-Firefox\error-context.md
+]]>
+</error>
+</testcase>
+<testcase name="E2E: Authentication Journey › should allow an existing customer to log in" classname="auth.spec.ts" time="0.006">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\auth-E2E-Authentication-Jo-7de15-existing-customer-to-log-in-Desktop-Firefox\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\firefox-1543\firefox\firefox.exe" type="Error">
+<![CDATA[  [Desktop Firefox] › auth.spec.ts:61:7 › E2E: Authentication Journey › should allow an existing customer to log in 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\firefox-1543\firefox\firefox.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\auth-E2E-Authentication-Jo-7de15-existing-customer-to-log-in-Desktop-Firefox\error-context.md
+]]>
+</error>
+</testcase>
+</testsuite>
+<testsuite name="builder.spec.ts" timestamp="2026-09-10T18:12:52.242Z" hostname="Desktop Firefox" tests="1" failures="0" skipped="0" time="0.007" errors="1">
+<testcase name="E2E: PC Builder &amp; Compatibility Engine Journey › complete flow: create build, select components, receive compatibility warning, save, share, add to cart" classname="builder.spec.ts" time="0.007">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\builder-E2E-PC-Builder-Com-58a00-ning-save-share-add-to-cart-Desktop-Firefox\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\firefox-1543\firefox\firefox.exe" type="Error">
+<![CDATA[  [Desktop Firefox] › builder.spec.ts:112:7 › E2E: PC Builder & Compatibility Engine Journey › complete flow: create build, select components, receive compatibility warning, save, share, add to cart 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\firefox-1543\firefox\firefox.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\builder-E2E-PC-Builder-Com-58a00-ning-save-share-add-to-cart-Desktop-Firefox\error-context.md
+]]>
+</error>
+</testcase>
+</testsuite>
+<testsuite name="checkout.spec.ts" timestamp="2026-09-10T18:12:52.242Z" hostname="Desktop Firefox" tests="1" failures="0" skipped="0" time="0.012" errors="1">
+<testcase name="E2E: Cart &amp; Checkout Journey (Mock Payment Safety Guarantee) › should review cart calculations, proceed through 3-step checkout, and place order with mock payment" classname="checkout.spec.ts" time="0.012">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\checkout-E2E-Cart-Checkout-e9e0e-ace-order-with-mock-payment-Desktop-Firefox\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\firefox-1543\firefox\firefox.exe" type="Error">
+<![CDATA[  [Desktop Firefox] › checkout.spec.ts:4:7 › E2E: Cart & Checkout Journey (Mock Payment Safety Guarantee) › should review cart calculations, proceed through 3-step checkout, and place order with mock payment 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\firefox-1543\firefox\firefox.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\checkout-E2E-Cart-Checkout-e9e0e-ace-order-with-mock-payment-Desktop-Firefox\error-context.md
+]]>
+</error>
+</testcase>
+</testsuite>
+<testsuite name="products.spec.ts" timestamp="2026-09-10T18:12:52.242Z" hostname="Desktop Firefox" tests="1" failures="0" skipped="0" time="0.01" errors="1">
+<testcase name="E2E: Catalog Browsing &amp; Search Journey › should browse products catalog, filter by category, and search" classname="products.spec.ts" time="0.01">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\products-E2E-Catalog-Brows-2aeaa-lter-by-category-and-search-Desktop-Firefox\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\firefox-1543\firefox\firefox.exe" type="Error">
+<![CDATA[  [Desktop Firefox] › products.spec.ts:4:7 › E2E: Catalog Browsing & Search Journey › should browse products catalog, filter by category, and search 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\firefox-1543\firefox\firefox.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\products-E2E-Catalog-Brows-2aeaa-lter-by-category-and-search-Desktop-Firefox\error-context.md
+]]>
+</error>
+</testcase>
+</testsuite>
+<testsuite name="auth.spec.ts" timestamp="2026-09-10T18:12:52.242Z" hostname="Desktop Safari" tests="2" failures="0" skipped="0" time="0.017" errors="2">
+<testcase name="E2E: Authentication Journey › should allow a new customer to register" classname="auth.spec.ts" time="0.007">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\auth-E2E-Authentication-Jo-6c0f2--a-new-customer-to-register-Desktop-Safari\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\webkit-2359\Playwright.exe" type="Error">
+<![CDATA[  [Desktop Safari] › auth.spec.ts:4:7 › E2E: Authentication Journey › should allow a new customer to register 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\webkit-2359\Playwright.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\auth-E2E-Authentication-Jo-6c0f2--a-new-customer-to-register-Desktop-Safari\error-context.md
+]]>
+</error>
+</testcase>
+<testcase name="E2E: Authentication Journey › should allow an existing customer to log in" classname="auth.spec.ts" time="0.01">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\auth-E2E-Authentication-Jo-7de15-existing-customer-to-log-in-Desktop-Safari\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\webkit-2359\Playwright.exe" type="Error">
+<![CDATA[  [Desktop Safari] › auth.spec.ts:61:7 › E2E: Authentication Journey › should allow an existing customer to log in 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\webkit-2359\Playwright.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\auth-E2E-Authentication-Jo-7de15-existing-customer-to-log-in-Desktop-Safari\error-context.md
+]]>
+</error>
+</testcase>
+</testsuite>
+<testsuite name="builder.spec.ts" timestamp="2026-09-10T18:12:52.242Z" hostname="Desktop Safari" tests="1" failures="0" skipped="0" time="0.007" errors="1">
+<testcase name="E2E: PC Builder &amp; Compatibility Engine Journey › complete flow: create build, select components, receive compatibility warning, save, share, add to cart" classname="builder.spec.ts" time="0.007">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\builder-E2E-PC-Builder-Com-58a00-ning-save-share-add-to-cart-Desktop-Safari\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\webkit-2359\Playwright.exe" type="Error">
+<![CDATA[  [Desktop Safari] › builder.spec.ts:112:7 › E2E: PC Builder & Compatibility Engine Journey › complete flow: create build, select components, receive compatibility warning, save, share, add to cart 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\webkit-2359\Playwright.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\builder-E2E-PC-Builder-Com-58a00-ning-save-share-add-to-cart-Desktop-Safari\error-context.md
+]]>
+</error>
+</testcase>
+</testsuite>
+<testsuite name="checkout.spec.ts" timestamp="2026-09-10T18:12:52.242Z" hostname="Desktop Safari" tests="1" failures="0" skipped="0" time="0.006" errors="1">
+<testcase name="E2E: Cart &amp; Checkout Journey (Mock Payment Safety Guarantee) › should review cart calculations, proceed through 3-step checkout, and place order with mock payment" classname="checkout.spec.ts" time="0.006">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\checkout-E2E-Cart-Checkout-e9e0e-ace-order-with-mock-payment-Desktop-Safari\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\webkit-2359\Playwright.exe" type="Error">
+<![CDATA[  [Desktop Safari] › checkout.spec.ts:4:7 › E2E: Cart & Checkout Journey (Mock Payment Safety Guarantee) › should review cart calculations, proceed through 3-step checkout, and place order with mock payment 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\webkit-2359\Playwright.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\checkout-E2E-Cart-Checkout-e9e0e-ace-order-with-mock-payment-Desktop-Safari\error-context.md
+]]>
+</error>
+</testcase>
+</testsuite>
+<testsuite name="products.spec.ts" timestamp="2026-09-10T18:12:52.242Z" hostname="Desktop Safari" tests="1" failures="0" skipped="0" time="0.007" errors="1">
+<testcase name="E2E: Catalog Browsing &amp; Search Journey › should browse products catalog, filter by category, and search" classname="products.spec.ts" time="0.007">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\products-E2E-Catalog-Brows-2aeaa-lter-by-category-and-search-Desktop-Safari\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\webkit-2359\Playwright.exe" type="Error">
+<![CDATA[  [Desktop Safari] › products.spec.ts:4:7 › E2E: Catalog Browsing & Search Journey › should browse products catalog, filter by category, and search 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\webkit-2359\Playwright.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\products-E2E-Catalog-Brows-2aeaa-lter-by-category-and-search-Desktop-Safari\error-context.md
+]]>
+</error>
+</testcase>
+</testsuite>
+<testsuite name="auth.spec.ts" timestamp="2026-09-10T18:12:52.242Z" hostname="Mobile Chrome" tests="2" failures="0" skipped="0" time="0.009" errors="2">
+<testcase name="E2E: Authentication Journey › should allow a new customer to register" classname="auth.spec.ts" time="0.006">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\auth-E2E-Authentication-Jo-6c0f2--a-new-customer-to-register-Mobile-Chrome\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe" type="Error">
+<![CDATA[  [Mobile Chrome] › auth.spec.ts:4:7 › E2E: Authentication Journey › should allow a new customer to register 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\auth-E2E-Authentication-Jo-6c0f2--a-new-customer-to-register-Mobile-Chrome\error-context.md
+]]>
+</error>
+</testcase>
+<testcase name="E2E: Authentication Journey › should allow an existing customer to log in" classname="auth.spec.ts" time="0.003">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\auth-E2E-Authentication-Jo-7de15-existing-customer-to-log-in-Mobile-Chrome\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe" type="Error">
+<![CDATA[  [Mobile Chrome] › auth.spec.ts:61:7 › E2E: Authentication Journey › should allow an existing customer to log in 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\auth-E2E-Authentication-Jo-7de15-existing-customer-to-log-in-Mobile-Chrome\error-context.md
+]]>
+</error>
+</testcase>
+</testsuite>
+<testsuite name="builder.spec.ts" timestamp="2026-09-10T18:12:52.242Z" hostname="Mobile Chrome" tests="1" failures="0" skipped="0" time="0.004" errors="1">
+<testcase name="E2E: PC Builder &amp; Compatibility Engine Journey › complete flow: create build, select components, receive compatibility warning, save, share, add to cart" classname="builder.spec.ts" time="0.004">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\builder-E2E-PC-Builder-Com-58a00-ning-save-share-add-to-cart-Mobile-Chrome\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe" type="Error">
+<![CDATA[  [Mobile Chrome] › builder.spec.ts:112:7 › E2E: PC Builder & Compatibility Engine Journey › complete flow: create build, select components, receive compatibility warning, save, share, add to cart 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\builder-E2E-PC-Builder-Com-58a00-ning-save-share-add-to-cart-Mobile-Chrome\error-context.md
+]]>
+</error>
+</testcase>
+</testsuite>
+<testsuite name="checkout.spec.ts" timestamp="2026-09-10T18:12:52.242Z" hostname="Mobile Chrome" tests="1" failures="0" skipped="0" time="0.011" errors="1">
+<testcase name="E2E: Cart &amp; Checkout Journey (Mock Payment Safety Guarantee) › should review cart calculations, proceed through 3-step checkout, and place order with mock payment" classname="checkout.spec.ts" time="0.011">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\checkout-E2E-Cart-Checkout-e9e0e-ace-order-with-mock-payment-Mobile-Chrome\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe" type="Error">
+<![CDATA[  [Mobile Chrome] › checkout.spec.ts:4:7 › E2E: Cart & Checkout Journey (Mock Payment Safety Guarantee) › should review cart calculations, proceed through 3-step checkout, and place order with mock payment 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\checkout-E2E-Cart-Checkout-e9e0e-ace-order-with-mock-payment-Mobile-Chrome\error-context.md
+]]>
+</error>
+</testcase>
+</testsuite>
+<testsuite name="products.spec.ts" timestamp="2026-09-10T18:12:52.242Z" hostname="Mobile Chrome" tests="1" failures="0" skipped="0" time="0.004" errors="1">
+<testcase name="E2E: Catalog Browsing &amp; Search Journey › should browse products catalog, filter by category, and search" classname="products.spec.ts" time="0.004">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\products-E2E-Catalog-Brows-2aeaa-lter-by-category-and-search-Mobile-Chrome\error-context.md]]
+]]>
+</system-out>
+<error message="browserType.launch: Executable doesn&apos;t exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe" type="Error">
+<![CDATA[  [Mobile Chrome] › products.spec.ts:4:7 › E2E: Catalog Browsing & Search Journey › should browse products catalog, filter by category, and search 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\amgau\AppData\Local\ms-playwright\chromium_headless_shell-1243\chrome-headless-shell-win64\chrome-headless-shell.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: ..\test-results\products-E2E-Catalog-Brows-2aeaa-lter-by-category-and-search-Mobile-Chrome\error-context.md
+]]>
+</error>
+</testcase>
+</testsuite>
+</testsuites>

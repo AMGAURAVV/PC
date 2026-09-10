@@ -8,9 +8,9 @@
  * ProductQueryDto extends PaginationDto and adds domain-specific filters.
  */
 
-import { IsInt, IsIn, IsOptional, IsString, Max, Min } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
+import { IsInt, IsIn, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class PaginationDto {
   @ApiPropertyOptional({ default: 1, minimum: 1, description: 'Page number (1-indexed)' })

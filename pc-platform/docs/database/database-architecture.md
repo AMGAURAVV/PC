@@ -315,6 +315,9 @@ The entire database layer is PostgreSQL-agnostic from the perspective of the app
 
 Frontend apps never see the `DATABASE_URL`. The API does not embed connection strings in its responses. The abstraction is complete.
 
+For complete cloud setup instructions, zero-downtime cutover runbooks, backup policies, and rollback procedures, see:
+👉 **[Google Cloud SQL Migration & Portability Guide](./migration-to-google-cloud-sql.md)**
+
 ---
 
 ## 7. Indexes and Performance

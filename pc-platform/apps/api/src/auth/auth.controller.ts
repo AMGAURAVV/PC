@@ -12,6 +12,7 @@ import {
   Ip,
   Headers,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import {
   ApiTags,
   ApiOperation,
@@ -19,19 +20,19 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { Response, Request as ExpressReq } from 'express';
+import type { Response, Request as ExpressReq } from 'express';
 
-import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import { AuthResponseDto } from './dto/auth-response.dto';
-import { Public } from '../common/decorators/public.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { JwtPayload } from './interfaces/jwt-payload.interface';
-import { AuthGuard } from '@nestjs/passport';
-import { VerifyEmailDto, ResendVerificationDto } from './dto/email-verification.dto';
-import { ForgotPasswordDto, ResetPasswordDto } from './dto/password-reset.dto';
-import { GoogleAuthDto } from './dto/google-auth.dto';
+import { Public } from '../common/decorators/public.decorator';
+
+import type { AuthService } from './auth.service';
+import { AuthResponseDto } from './dto/auth-response.dto';
+import type { VerifyEmailDto, ResendVerificationDto } from './dto/email-verification.dto';
+import type { GoogleAuthDto } from './dto/google-auth.dto';
+import type { LoginDto } from './dto/login.dto';
+import type { ForgotPasswordDto, ResetPasswordDto } from './dto/password-reset.dto';
+import type { RegisterDto } from './dto/register.dto';
+import type { JwtPayload } from './interfaces/jwt-payload.interface';
 
 const REFRESH_COOKIE_NAME = 'refreshToken';
 const getCookieOptions = () => ({

@@ -1,20 +1,25 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import request from 'supertest';
 import * as crypto from 'crypto';
+
+import type { INestApplication} from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
-import { AdminModule } from './admin.module';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { DatabaseService } from '@pc-platform/database';
-import { DatabaseModule } from '../database/database.module';
+import request from 'supertest';
+
+import { JwtStrategy } from '../auth/strategies/jwt.strategy';
 import { CacheModule } from '../common/cache/cache.module';
 import { CacheService } from '../common/cache/cache.service';
 import { AllExceptionsFilter } from '../common/filters/all-exceptions.filter';
-import { ResponseTransformInterceptor } from '../common/interceptors/response-transform.interceptor';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
-import { JwtStrategy } from '../auth/strategies/jwt.strategy';
-import { ConfigModule } from '@nestjs/config';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { ResponseTransformInterceptor } from '../common/interceptors/response-transform.interceptor';
+import { DatabaseModule } from '../database/database.module';
+
+import { AdminModule } from './admin.module';
 
 const TEST_JWT_SECRET = 'super-secret-jwt-token-key-for-pc-platform-dev-environment-12345';
 
@@ -130,6 +135,9 @@ describe('Admin API Integration Tests', () => {
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: `ph-${Date.now()}`, ...data })),
         findMany: jest.fn().mockResolvedValue([]),
         count: jest.fn().mockResolvedValue(0),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+        findUnique: jest.fn().mockResolvedValue(null),
+        update: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'ph-1', ...data })),
       },
       compatibilityRule: {
         findMany: jest.fn().mockResolvedValue([]),
@@ -940,4 +948,96 @@ describe('Admin API Integration Tests', () => {
       expect(res.body.data.featuredCount).toBe(2);
     });
   });
+
+  describe('Historical Price Governance & Administrative Corrections', () => {
+    it('should reject historical price correction without auth token (401)', async () => {
+      const res = await request(app.getHttpServer())
+        .patch('/admin/prices/history/ph-1/correct')
+        .send({ amount: 35000, reason: 'Correction' });
+
+      expect(res.status).toBe(401);
+    });
+
+    it('should reject historical price correction from customer/non-admin user (403)', async () => {
+      const res = await request(app.getHttpServer())
+        .patch('/admin/prices/history/ph-1/correct')
+        .set('Authorization', `Bearer ${customerToken}`)
+        .send({ amount: 35000, reason: 'Correction' });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('should return 404 when correcting a non-existent historical price record', async () => {
+      mockDb.priceHistory.findUnique.mockResolvedValue(null);
+
+      const res = await request(app.getHttpServer())
+        .patch('/admin/prices/history/non-existent/correct')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          amount: 35000,
+          reason: 'Correcting typo in historical price batch',
+        });
+
+      expect(res.status).toBe(404);
+    });
+
+    it('should successfully perform authorized correction on invalid historical price and write audit log', async () => {
+      const existingHistory = {
+        id: 'ph-invalid',
+        productId: 'prod-1',
+        variantId: null,
+        amount: 350000, // typo: 3.5L instead of 35k
+        currency: 'INR',
+        source: 'MANUAL',
+        effectiveDate: new Date('2026-01-01T00:00:00Z'),
+        endDate: new Date('2026-02-01T00:00:00Z'),
+        isCorrection: false,
+        originalAmount: null,
+        product: { id: 'prod-1', name: 'Ryzen 7 7800X3D', sku: 'CPU-RYZEN-7800X3D' },
+        variant: null,
+      };
+
+      mockDb.priceHistory.findUnique.mockResolvedValue(existingHistory);
+      mockDb.priceHistory.update.mockResolvedValue({
+        ...existingHistory,
+        amount: 35000,
+        originalAmount: 350000,
+        isCorrection: true,
+        correctionReason: 'Typo in seasonal import: extra zero added by supplier',
+        correctedBy: 'admin@pcplatform.com',
+        correctedAt: new Date(),
+      });
+
+      const res = await request(app.getHttpServer())
+        .patch('/admin/prices/history/ph-invalid/correct')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          amount: 35000,
+          reason: 'Typo in seasonal import: extra zero added by supplier',
+        });
+
+      expect(res.status).toBe(200);
+      expect(mockDb.priceHistory.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'ph-invalid' },
+          data: expect.objectContaining({
+            amount: 35000,
+            originalAmount: 350000,
+            isCorrection: true,
+            correctionReason: 'Typo in seasonal import: extra zero added by supplier',
+          }),
+        }),
+      );
+      expect(mockDb.auditLog.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            action: 'PRICE_HISTORY_CORRECTION',
+            entityType: 'PriceHistory',
+            entityId: 'ph-invalid',
+          }),
+        }),
+      );
+    });
+  });
 });
+

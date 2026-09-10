@@ -12,11 +12,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { RolesGuard } from '../../common/guards/roles.guard';
-import { Roles } from '../../common/decorators/roles.decorator';
+
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { AdminCmsService } from '../services/admin-cms.service';
-import {
+import { Roles } from '../../common/decorators/roles.decorator';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import type {
   CreateBannerDto,
   UpdateBannerDto,
   BannerFilterDto,
@@ -24,6 +24,7 @@ import {
   UpdateHomepageSectionDto,
   SetFeaturedProductsDto,
 } from '../dto/admin-cms.dto';
+import type { AdminCmsService } from '../services/admin-cms.service';
 
 @ApiTags('admin-cms')
 @ApiBearerAuth('access-token')

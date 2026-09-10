@@ -1,8 +1,9 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { RolesGuard } from '../../common/guards/roles.guard';
+
 import { Roles } from '../../common/decorators/roles.decorator';
-import { AdminDashboardService } from '../services/admin-dashboard.service';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import type { AdminDashboardService } from '../services/admin-dashboard.service';
 
 @ApiTags('admin-dashboard')
 @ApiBearerAuth('access-token')

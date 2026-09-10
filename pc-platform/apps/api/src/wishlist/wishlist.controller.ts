@@ -1,10 +1,14 @@
 import { Controller, Get, Post, Body, Param, Delete, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse as SwaggerResponse } from '@nestjs/swagger';
-import { WishlistService } from './wishlist.service';
-import { AddToWishlistDto, WishlistResponseDto } from './dto/wishlist.dto';
+
+
+import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { RolesGuard } from '../common/guards/roles.guard';
+
+import { WishlistResponseDto } from './dto/wishlist.dto';
+import type { AddToWishlistDto} from './dto/wishlist.dto';
+import type { WishlistService } from './wishlist.service';
 
 @ApiTags('wishlist')
 @ApiBearerAuth('access-token')

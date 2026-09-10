@@ -1,6 +1,7 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
-import { CompatibilityService } from './compatibility.service';
+import { Controller, Post, Body } from '@nestjs/common';
 import type { BuildComponents, CompatibilityResult } from '@pc-platform/types';
+
+import { CompatibilityService } from './compatibility.service';
 
 /**
  * CompatibilityController

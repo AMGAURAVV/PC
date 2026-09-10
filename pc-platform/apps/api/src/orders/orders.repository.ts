@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from '@pc-platform/database';
-import { CreateOrderDto, UpdateOrderStatusDto } from './dto/order.dto';
+import type { DatabaseService } from '@pc-platform/database';
+
+import type { CreateOrderDto} from './dto/order.dto';
+import { UpdateOrderStatusDto } from './dto/order.dto';
 
 @Injectable()
 export class OrdersRepository {

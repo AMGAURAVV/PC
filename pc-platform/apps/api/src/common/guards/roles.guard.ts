@@ -12,15 +12,17 @@
  * MUST be used after JwtAuthGuard (user must be authenticated first).
  */
 
-import {
+import type {
   CanActivate,
-  ExecutionContext,
+  ExecutionContext} from '@nestjs/common';
+import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { ROLES_KEY } from '../decorators/roles.decorator';
+import type { Reflector } from '@nestjs/core';
+
 import type { JwtPayload } from '../../auth/interfaces/jwt-payload.interface';
+import { ROLES_KEY } from '../decorators/roles.decorator';
 
 @Injectable()
 export class RolesGuard implements CanActivate {

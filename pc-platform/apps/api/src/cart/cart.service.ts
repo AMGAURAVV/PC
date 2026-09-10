@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CartRepository } from './cart.repository';
-import { AddToCartDto, UpdateCartItemDto, CartResponseDto } from './dto/cart.dto';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+
+import type { CartRepository } from './cart.repository';
+import type { AddToCartDto, UpdateCartItemDto, CartResponseDto } from './dto/cart.dto';
 
 @Injectable()
 export class CartService {
@@ -80,19 +81,71 @@ export class CartService {
     return { message: 'Cart cleared successfully' };
   }
 
+  async addBuildBundle(userId: string, buildId: string): Promise<CartResponseDto> {
+    const build = await this.cartRepo.findBuildWithItems(buildId);
+    if (!build) {
+      throw new NotFoundException(`Build with ID ${buildId} not found`);
+    }
+
+    if (build.userId !== userId && !build.isPublic) {
+      throw new ForbiddenException('Access denied to private build bundle');
+    }
+
+    if (!build.items || build.items.length === 0) {
+      throw new NotFoundException('Build contains no components to add to cart');
+    }
+
+    let cart = await this.cartRepo.findActiveCartByUser(userId);
+    if (!cart) {
+      cart = await this.cartRepo.createCart(userId);
+    }
+
+    for (const item of build.items) {
+      const existing = cart.items?.find((i: any) => i.productId === item.productId);
+      if (existing) {
+        await this.cartRepo.updateItemQuantity(existing.id, existing.quantity + item.quantity);
+      } else {
+        const itemDto: AddToCartDto = {
+          productId: item.productId,
+          quantity: item.quantity,
+          ...(item.variantId ? { productVariantId: item.variantId } : {}),
+        };
+        await this.cartRepo.addItemToCart(cart.id, itemDto);
+      }
+    }
+
+    const updated = await this.cartRepo.findActiveCartByUser(userId);
+    return this.mapToDto(updated);
+  }
+
   private mapToDto(cart: any): CartResponseDto {
     return {
       id: cart.id,
       userId: cart.userId,
       status: cart.status,
-      items: cart.items?.map((item: any) => ({
-        id: item.id,
-        productId: item.productId,
-        productVariantId: item.productVariantId,
-        quantity: item.quantity,
-        priceAtAdded: Number(item.priceAtAdded),
-      })) || [],
-      updatedAt: cart.updatedAt.toISOString(),
+      items:
+        cart.items?.map((item: any) => {
+          const product = item.product;
+          const livePricePaise = product?.prices?.[0]?.amount;
+          const unitPrice = livePricePaise
+            ? Math.round(Number(livePricePaise) / 100)
+            : Number(item.priceAtAdded || 0);
+          const availableStock = product?.inventory?.quantity ?? 10;
+
+          return {
+            id: item.id,
+            productId: item.productId,
+            productVariantId: item.productVariantId || undefined,
+            quantity: item.quantity,
+            priceAtAdded: Number(item.priceAtAdded || 0),
+            productName: product?.name || undefined,
+            brandName: product?.brand?.name || undefined,
+            unitPrice,
+            totalPrice: unitPrice * item.quantity,
+            inStock: availableStock >= item.quantity,
+          };
+        }) || [],
+      updatedAt: cart.updatedAt ? cart.updatedAt.toISOString() : new Date().toISOString(),
     };
   }
 }

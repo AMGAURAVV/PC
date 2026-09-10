@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
-import { UsersRepository } from './users.repository';
-import { CreateUserDto, UpdateUserDto, UserResponseDto } from './dto/user.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
+
+import type { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginatedResponse } from '../common/dto/response.dto';
+
+import type { CreateUserDto, UpdateUserDto, UserResponseDto } from './dto/user.dto';
+import type { UsersRepository } from './users.repository';
 
 @Injectable()
 export class UsersService {

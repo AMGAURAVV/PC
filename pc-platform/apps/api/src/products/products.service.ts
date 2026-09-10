@@ -3,23 +3,27 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ProductsRepository } from './products.repository';
-import {
+
+import type { CacheService } from '../common/cache/cache.service';
+import { PaginatedResponse } from '../common/dto/response.dto';
+import type { StorageService } from '../storage/storage.service';
+
+import type {
+  ComparisonProductItemDto,
+  ProductComparisonResponseDto,
+} from './dto/product-compare.dto';
+import type { ProductFilterDto} from './dto/product-filter.dto';
+import { ProductSortBy } from './dto/product-filter.dto';
+import type { CreateProductImageDto } from './dto/product-image.dto';
+import type { CreateProductVariantDto, UpdateProductVariantDto } from './dto/product-variant.dto';
+import type {
   CreateProductDto,
   UpdateProductDto,
   ProductResponseDto,
   ProductPriceDto,
   ProductInventoryDto,
 } from './dto/product.dto';
-import { ProductFilterDto, ProductSortBy } from './dto/product-filter.dto';
-import { PaginatedResponse } from '../common/dto/response.dto';
-import { CreateProductVariantDto, UpdateProductVariantDto } from './dto/product-variant.dto';
-import { CreateProductImageDto } from './dto/product-image.dto';
-import {
-  ComparisonProductItemDto,
-  ProductComparisonResponseDto,
-} from './dto/product-compare.dto';
-import { CacheService } from '../common/cache/cache.service';
+import type { ProductsRepository } from './products.repository';
 
 function generateSlug(text: string): string {
   return text
@@ -27,8 +31,8 @@ function generateSlug(text: string): string {
     .toLowerCase()
     .trim()
     .replace(/\s+/g, '-')
-    .replace(/[^\w\-]+/g, '')
-    .replace(/\-\-+/g, '-');
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-');
 }
 
 @Injectable()
@@ -36,6 +40,7 @@ export class ProductsService {
   constructor(
     private readonly productsRepo: ProductsRepository,
     private readonly cacheService: CacheService,
+    private readonly storageService: StorageService,
   ) {}
 
   // ── Public Catalog & Filtering ──────────────────────────────────────────────
@@ -300,6 +305,11 @@ export class ProductsService {
       throw new NotFoundException(`Product with ID "${productId}" not found`);
     }
 
+    const existingImage = (product.images || []).find((img: any) => img.id === imageId);
+    if (existingImage?.storageKey) {
+      await this.storageService.deleteFile(existingImage.storageKey).catch(() => {});
+    }
+
     await this.productsRepo.deleteImage(productId, imageId);
     this.cacheService.invalidateByTag('catalog:products');
     return { message: 'Image deleted successfully' };
@@ -410,6 +420,7 @@ export class ProductsService {
       productId: img.productId,
       variantId: img.variantId,
       url: img.url,
+      storageKey: img.storageKey || null,
       altText: img.altText,
       isPrimary: img.isPrimary,
       sortOrder: img.sortOrder,

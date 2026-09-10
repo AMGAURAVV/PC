@@ -1,14 +1,15 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { DatabaseService } from '@pc-platform/database';
-import { AdminAuditService } from '../admin-audit.service';
-import {
+import type { DatabaseService } from '@pc-platform/database';
+
+import type { CacheService } from '../../common/cache/cache.service';
+import { PaginatedResponse } from '../../common/dto/response.dto';
+import type { AdminAuditService } from '../admin-audit.service';
+import type {
   AdminCategoryFilterDto,
   AdminCreateCategoryDto,
   AdminUpdateCategoryDto,
   AdminReorderCategoriesDto,
 } from '../dto/admin-category.dto';
-import { PaginatedResponse } from '../../common/dto/response.dto';
-import { CacheService } from '../../common/cache/cache.service';
 
 function generateSlug(text: string): string {
   return text
@@ -16,8 +17,8 @@ function generateSlug(text: string): string {
     .toLowerCase()
     .trim()
     .replace(/\s+/g, '-')
-    .replace(/[^\w\-]+/g, '')
-    .replace(/\-\-+/g, '-');
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-');
 }
 
 @Injectable()

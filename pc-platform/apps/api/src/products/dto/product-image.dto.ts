@@ -16,6 +16,11 @@ export class CreateProductImageDto {
   @IsNotEmpty()
   url!: string;
 
+  @ApiPropertyOptional({ example: 'products/ryzen-7-7800x3d/front-1725890.webp', description: 'Underlying object storage key' })
+  @IsOptional()
+  @IsString()
+  storageKey?: string | undefined;
+
   @ApiPropertyOptional({ example: 'AMD Ryzen 7 7800X3D Retail Box Front View' })
   @IsOptional()
   @IsString()
@@ -65,6 +70,9 @@ export class ProductImageResponseDto {
 
   @ApiProperty()
   url!: string;
+
+  @ApiPropertyOptional()
+  storageKey?: string | null | undefined;
 
   @ApiPropertyOptional()
   altText?: string | null | undefined;

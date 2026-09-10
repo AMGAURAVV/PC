@@ -1,22 +1,27 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import request from 'supertest';
 import * as crypto from 'crypto';
+
+import type { INestApplication} from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
-import { ProductsModule } from './products.module';
-import { CategoriesModule } from '../categories/categories.module';
-import { BrandsModule } from '../brands/brands.module';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { DatabaseService } from '@pc-platform/database';
-import { DatabaseModule } from '../database/database.module';
+import request from 'supertest';
+
+import { JwtStrategy } from '../auth/strategies/jwt.strategy';
+import { BrandsModule } from '../brands/brands.module';
+import { CategoriesModule } from '../categories/categories.module';
 import { CacheModule } from '../common/cache/cache.module';
 import { CacheService } from '../common/cache/cache.service';
 import { AllExceptionsFilter } from '../common/filters/all-exceptions.filter';
-import { ResponseTransformInterceptor } from '../common/interceptors/response-transform.interceptor';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
-import { JwtStrategy } from '../auth/strategies/jwt.strategy';
-import { ConfigModule } from '@nestjs/config';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { ResponseTransformInterceptor } from '../common/interceptors/response-transform.interceptor';
+import { DatabaseModule } from '../database/database.module';
+
+import { ProductsModule } from './products.module';
 
 // ─── Shared Mock Fixtures ──────────────────────────────────────────────────────
 

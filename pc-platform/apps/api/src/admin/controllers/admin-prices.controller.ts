@@ -11,16 +11,18 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { RolesGuard } from '../../common/guards/roles.guard';
-import { Roles } from '../../common/decorators/roles.decorator';
+
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { AdminPricesService } from '../services/admin-prices.service';
-import {
+import { Roles } from '../../common/decorators/roles.decorator';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import type {
   AdminCreatePriceDto,
   AdminUpdatePriceDto,
+  AdminCorrectPriceHistoryDto,
   BulkPriceUpdateDto,
   PriceHistoryFilterDto,
 } from '../dto/admin-price.dto';
+import type { AdminPricesService } from '../services/admin-prices.service';
 
 @ApiTags('admin-prices')
 @ApiBearerAuth('access-token')
@@ -57,5 +59,15 @@ export class AdminPricesController {
   @ApiOperation({ summary: 'Query comprehensive price history timeline across products and variants' })
   getPriceHistory(@Query() query: PriceHistoryFilterDto) {
     return this.pricesService.getPriceHistory(query);
+  }
+
+  @Patch('history/:id/correct')
+  @ApiOperation({ summary: 'Perform authorized administrative correction on an invalid historical price record' })
+  correctHistoricalPrice(
+    @Param('id') id: string,
+    @CurrentUser() actor: any,
+    @Body() dto: AdminCorrectPriceHistoryDto,
+  ) {
+    return this.pricesService.correctHistoricalPrice(id, dto, actor);
   }
 }

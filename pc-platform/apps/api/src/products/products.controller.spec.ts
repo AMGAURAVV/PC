@@ -1,8 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+
+import { PaginatedResponse } from '../common/dto/response.dto';
+
+import { ProductFilterDto } from './dto/product-filter.dto';
 import { ProductsController } from './products.controller';
 import { ProductsService } from './products.service';
-import { ProductFilterDto } from './dto/product-filter.dto';
-import { PaginatedResponse } from '../common/dto/response.dto';
 
 describe('ProductsController', () => {
   let controller: ProductsController;

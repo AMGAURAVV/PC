@@ -1,0 +1,148 @@
+name: CD Continuous Deployment Orchestrator
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: "Environment to deploy"
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      apps:
+        description: 'Applications to deploy (comma-separated or "all")'
+        required: true
+        default: "all"
+        type: string
+      image_tag:
+        description: "Custom image tag (defaults to commit SHA)"
+        required: false
+        type: string
+        default: ""
+
+concurrency:
+  group: cd-orchestrator-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  determine-environment:
+    name: Determine Deployment Target
+    runs-on: ubuntu-latest
+    outputs:
+      env: ${{ steps.set-env.outputs.env }}
+      deploy_api: ${{ steps.set-apps.outputs.deploy_api }}
+      deploy_web: ${{ steps.set-apps.outputs.deploy_web }}
+      deploy_admin: ${{ steps.set-apps.outputs.deploy_admin }}
+      tag: ${{ steps.set-tag.outputs.tag }}
+    steps:
+      - name: Compute Target Environment
+        id: set-env
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TARGET="${{ inputs.target_environment }}"
+          elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
+            TARGET="development"
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            TARGET="staging"
+          else
+            echo "Branch ${{ github.ref }} does not map to an automatic deployment environment."
+            exit 1
+          fi
+
+          echo "Target deployment environment: $TARGET"
+          echo "env=$TARGET" >> $GITHUB_OUTPUT
+
+      - name: Resolve Selected Applications
+        id: set-apps
+        run: |
+          APP_SELECTION="${{ inputs.apps || 'all' }}"
+          if [ "$APP_SELECTION" = "all" ]; then
+            echo "deploy_api=true" >> $GITHUB_OUTPUT
+            echo "deploy_web=true" >> $GITHUB_OUTPUT
+            echo "deploy_admin=true" >> $GITHUB_OUTPUT
+          else
+            echo "deploy_api=$(echo $APP_SELECTION | grep -q 'api' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+            echo "deploy_web=$(echo $APP_SELECTION | grep -q 'web' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+            echo "deploy_admin=$(echo $APP_SELECTION | grep -q 'admin' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Resolve Image Tag
+        id: set-tag
+        run: |
+          TAG="${{ inputs.image_tag }}"
+          if [ -z "$TAG" ]; then
+            TAG="$(echo ${{ github.sha }} | cut -c1-7)"
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+  # ─────────────────────────────────────────────────────────────
+  # Safety Verification: Prevent Automatic Production Rollout
+  # ─────────────────────────────────────────────────────────────
+  production-guard:
+    name: Production Safety Guard
+    runs-on: ubuntu-latest
+    needs: [determine-environment]
+    if: needs.determine-environment.outputs.env == 'production'
+    steps:
+      - name: Validate Manual Dispatch
+        run: |
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            echo "CRITICAL: Automatic deployment to production is prohibited."
+            echo "Production deployments must be triggered manually via workflow_dispatch with required approvals."
+            exit 1
+          fi
+          echo "Production deployment initiated manually via workflow_dispatch by @${{ github.actor }}."
+
+  # ─────────────────────────────────────────────────────────────
+  # Deploy API Service (Prerequisite for Frontends)
+  # ─────────────────────────────────────────────────────────────
+  deploy-api:
+    name: Deploy API
+    needs: [determine-environment, production-guard]
+    if: |
+      always() &&
+      (needs.production-guard.result == 'success' || needs.production-guard.result == 'skipped') &&
+      needs.determine-environment.outputs.deploy_api == 'true'
+    uses: ./.github/workflows/deploy-api.yml
+    with:
+      environment: ${{ needs.determine-environment.outputs.env }}
+      image_tag: ${{ needs.determine-environment.outputs.tag }}
+    secrets: inherit
+
+  # ─────────────────────────────────────────────────────────────
+  # Deploy Web Storefront (Runs after API is healthy)
+  # ─────────────────────────────────────────────────────────────
+  deploy-web:
+    name: Deploy Web
+    needs: [determine-environment, deploy-api]
+    if: |
+      always() &&
+      (needs.deploy-api.result == 'success' || needs.determine-environment.outputs.deploy_api != 'true') &&
+      needs.determine-environment.outputs.deploy_web == 'true'
+    uses: ./.github/workflows/deploy-web.yml
+    with:
+      environment: ${{ needs.determine-environment.outputs.env }}
+      image_tag: ${{ needs.determine-environment.outputs.tag }}
+    secrets: inherit
+
+  # ─────────────────────────────────────────────────────────────
+  # Deploy Admin Backoffice (Runs in parallel with or after API)
+  # ─────────────────────────────────────────────────────────────
+  deploy-admin:
+    name: Deploy Admin
+    needs: [determine-environment, deploy-api]
+    if: |
+      always() &&
+      (needs.deploy-api.result == 'success' || needs.determine-environment.outputs.deploy_api != 'true') &&
+      needs.determine-environment.outputs.deploy_admin == 'true'
+    uses: ./.github/workflows/deploy-admin.yml
+    with:
+      environment: ${{ needs.determine-environment.outputs.env }}
+      image_tag: ${{ needs.determine-environment.outputs.tag }}
+    secrets: inherit

@@ -17,12 +17,32 @@ import type {
   Category,
   CompatibilityResult,
   CreateBuildInput,
+  EvaluateBuildInput,
+  BuildCalculations,
   CreateOrderInput,
   CreateUserInput,
   LoginInput,
   Order,
   Product,
   User,
+  UseCaseDefinition,
+  ConfiguratorBaseBuild,
+  ConfiguratorOptionsResponse,
+  RecommendationInput,
+  RecommendationResult,
+  CheckoutSummaryInput,
+  CheckoutSummaryResult,
+  CheckoutOrderInput,
+  CouponValidationResult,
+  PaymentIntentResponse,
+  PaymentVerificationInput,
+  PaymentVerificationResponse,
+  SearchResult,
+  SearchFacets,
+  SearchFilterInput,
+  SearchSuggestion,
+  ProductPriceSummary,
+  PriceHistoryRecord,
 } from '@pc-platform/types';
 import type { ProductFilters } from '@pc-platform/validation';
 
@@ -147,6 +167,22 @@ export async function getProductBySlug(slug: string): Promise<ApiResponse<Produc
   });
 }
 
+export async function getProductPriceHistory(
+  productId: string,
+  params?: { variantId?: string | undefined; page?: number | undefined; limit?: number | undefined } | undefined,
+): Promise<ApiResponse<ProductPriceSummary>> {
+  const query = new URLSearchParams();
+  if (params?.variantId) query.set('variantId', params.variantId);
+  if (params?.page) query.set('page', String(params.page));
+  if (params?.limit) query.set('limit', String(params.limit));
+  const qStr = query.toString();
+  return request(`/prices/product/${productId}/history${qStr ? `?${qStr}` : ''}`, {
+    tags: [`price-history-${productId}`],
+    revalidate: 60,
+  });
+}
+
+
 // ── Categories ─────────────────────────────────────────────────
 
 export async function getCategories(): Promise<ApiResponse<Category[]>> {
@@ -187,6 +223,12 @@ export async function checkCompatibility(
   return request('/builds/check-compatibility', { method: 'POST', body: components });
 }
 
+export async function evaluateBuild(
+  input: EvaluateBuildInput,
+): Promise<ApiResponse<BuildCalculations>> {
+  return request('/builds/evaluate', { method: 'POST', body: input });
+}
+
 // ── Orders ─────────────────────────────────────────────────────
 
 export async function getOrders(): Promise<PaginatedResponse<Order>> {
@@ -199,4 +241,137 @@ export async function getOrderById(id: string): Promise<ApiResponse<Order>> {
 
 export async function createOrder(input: CreateOrderInput): Promise<ApiResponse<Order>> {
   return request('/orders', { method: 'POST', body: input });
+}
+
+// ── Guided Configurator ────────────────────────────────────────
+
+export async function getConfiguratorUseCases(): Promise<ApiResponse<UseCaseDefinition[]>> {
+  return request('/configurator/use-cases', { revalidate: 3600 });
+}
+
+export async function getBaseBuilds(params?: {
+  useCase?: string;
+  budgetMin?: number;
+  budgetMax?: number;
+}): Promise<ApiResponse<ConfiguratorBaseBuild[]>> {
+  const query = new URLSearchParams();
+  if (params?.useCase) query.set('useCase', params.useCase);
+  if (params?.budgetMin) query.set('budgetMin', String(params.budgetMin));
+  if (params?.budgetMax) query.set('budgetMax', String(params.budgetMax));
+  const queryString = query.toString();
+  return request(`/configurator/base-builds${queryString ? `?${queryString}` : ''}`, {
+    revalidate: 300,
+  });
+}
+
+export async function getConfiguratorOptions(
+  baseBuildId: string,
+): Promise<ApiResponse<ConfiguratorOptionsResponse>> {
+  return request(`/configurator/base-builds/${baseBuildId}/options`, { revalidate: 300 });
+}
+
+// ── Recommendation Engine ──────────────────────────────────────
+
+export async function getRecommendation(
+  input: RecommendationInput,
+): Promise<ApiResponse<RecommendationResult>> {
+  return request('/recommendations', { method: 'POST', body: input });
+}
+
+// ── Commerce, Checkout & Payments ──────────────────────────────
+
+export async function getCheckoutSummary(
+  input: CheckoutSummaryInput,
+): Promise<ApiResponse<CheckoutSummaryResult>> {
+  return request('/orders/checkout-summary', { method: 'POST', body: input });
+}
+
+export async function checkoutOrder(
+  input: CheckoutOrderInput,
+): Promise<ApiResponse<{ order: Order; paymentIntent: PaymentIntentResponse }>> {
+  return request('/orders/checkout', { method: 'POST', body: input });
+}
+
+export async function validateCoupon(
+  code: string,
+  orderAmount: number,
+): Promise<ApiResponse<CouponValidationResult>> {
+  return request('/coupons/validate', { method: 'POST', body: { code, orderAmount } });
+}
+
+export async function createPaymentIntent(
+  orderId: string,
+): Promise<ApiResponse<PaymentIntentResponse>> {
+  return request('/payments/create-intent', { method: 'POST', body: { orderId } });
+}
+
+export async function verifyPayment(
+  input: PaymentVerificationInput,
+): Promise<ApiResponse<PaymentVerificationResponse>> {
+  return request('/payments/verify', { method: 'POST', body: input });
+}
+
+export async function addBuildBundleToCart(
+  buildId: string,
+): Promise<ApiResponse<{ message: string; cart: any }>> {
+  return request(`/cart/bundle/${buildId}`, { method: 'POST' });
+}
+
+// ── Search & Autocomplete ──────────────────────────────────────
+
+export async function searchProducts(
+  input: SearchFilterInput = {},
+): Promise<ApiResponse<SearchResult<Product>>> {
+  const params = new URLSearchParams();
+  if (input.query) params.set('q', input.query);
+  if (input.page) params.set('page', String(input.page));
+  if (input.limit) params.set('limit', String(input.limit));
+  if (input.sortBy) params.set('sortBy', input.sortBy);
+  if (input.minPrice !== undefined) params.set('minPrice', String(input.minPrice));
+  if (input.maxPrice !== undefined) params.set('maxPrice', String(input.maxPrice));
+  if (input.inStock !== undefined) params.set('inStock', String(input.inStock));
+
+  if (input.category) {
+    if (Array.isArray(input.category)) {
+      input.category.forEach((c) => params.append('category', c));
+    } else {
+      params.set('category', input.category);
+    }
+  }
+
+  if (input.brand) {
+    if (Array.isArray(input.brand)) {
+      input.brand.forEach((b) => params.append('brand', b));
+    } else {
+      params.set('brand', input.brand);
+    }
+  }
+
+  if (input.componentType) {
+    if (Array.isArray(input.componentType)) {
+      input.componentType.forEach((ct) => params.append('componentType', ct));
+    } else {
+      params.set('componentType', input.componentType);
+    }
+  }
+
+  if (input.specs) {
+    params.set('specs', JSON.stringify(input.specs));
+  }
+
+  const query = params.toString();
+  return request(`/search${query ? `?${query}` : ''}`, {
+    tags: ['search'],
+    revalidate: 60,
+  });
+}
+
+export async function getSearchSuggestions(
+  query: string,
+  limit: number = 8,
+): Promise<ApiResponse<SearchSuggestion[]>> {
+  const params = new URLSearchParams();
+  params.set('q', query);
+  params.set('limit', String(limit));
+  return request(`/search/suggest?${params.toString()}`);
 }

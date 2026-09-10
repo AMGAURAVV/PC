@@ -12,15 +12,16 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { RolesGuard } from '../../common/guards/roles.guard';
-import { Roles } from '../../common/decorators/roles.decorator';
+
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { AdminReviewsService } from '../services/admin-reviews.service';
-import {
+import { Roles } from '../../common/decorators/roles.decorator';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import type {
   AdminReviewFilterDto,
   ModerateReviewDto,
   BulkModerateReviewsDto,
 } from '../dto/admin-review.dto';
+import type { AdminReviewsService } from '../services/admin-reviews.service';
 
 @ApiTags('admin-reviews')
 @ApiBearerAuth('access-token')

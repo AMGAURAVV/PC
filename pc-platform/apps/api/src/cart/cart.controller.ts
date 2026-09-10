@@ -1,10 +1,13 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse as SwaggerResponse } from '@nestjs/swagger';
-import { CartService } from './cart.service';
-import { AddToCartDto, UpdateCartItemDto, CartResponseDto } from './dto/cart.dto';
+
+import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { RolesGuard } from '../common/guards/roles.guard';
+
+import type { CartService } from './cart.service';
+import type { AddToCartDto, UpdateCartItemDto} from './dto/cart.dto';
+import { CartResponseDto } from './dto/cart.dto';
 
 @ApiTags('cart')
 @ApiBearerAuth('access-token')
@@ -25,6 +28,16 @@ export class CartController {
   @SwaggerResponse({ status: 200, type: CartResponseDto })
   addItem(@CurrentUser() user: JwtPayload, @Body() addToCartDto: AddToCartDto) {
     return this.cartService.addItem(user.sub, addToCartDto);
+  }
+
+  @Post('bundle/:buildId')
+  @ApiOperation({ summary: 'Add entire build bundle to cart' })
+  @SwaggerResponse({ status: 200, type: CartResponseDto })
+  addBuildBundle(
+    @CurrentUser() user: JwtPayload,
+    @Param('buildId') buildId: string,
+  ) {
+    return this.cartService.addBuildBundle(user.sub, buildId);
   }
 
   @Patch('items/:itemId')

@@ -1,12 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { DatabaseService } from '@pc-platform/database';
-import { AdminAuditService } from '../admin-audit.service';
-import {
+import type { DatabaseService } from '@pc-platform/database';
+
+import { PaginatedResponse } from '../../common/dto/response.dto';
+import type { AdminAuditService } from '../admin-audit.service';
+import type {
   CreateBuildTemplateDto,
   UpdateBuildTemplateDto,
   BuildTemplateFilterDto,
 } from '../dto/admin-template.dto';
-import { PaginatedResponse } from '../../common/dto/response.dto';
 
 function generateSlug(text: string): string {
   return text
@@ -14,8 +15,8 @@ function generateSlug(text: string): string {
     .toLowerCase()
     .trim()
     .replace(/\s+/g, '-')
-    .replace(/[^\w\-]+/g, '')
-    .replace(/\-\-+/g, '-');
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-');
 }
 
 @Injectable()

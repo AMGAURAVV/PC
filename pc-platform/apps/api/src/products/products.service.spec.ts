@@ -1,9 +1,13 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { ProductsService } from './products.service';
-import { ProductsRepository } from './products.repository';
+import { Test } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+
 import { CacheService } from '../common/cache/cache.service';
+import { StorageService } from '../storage/storage.service';
+
 import { ProductFilterDto, ProductSortBy } from './dto/product-filter.dto';
+import { ProductsRepository } from './products.repository';
+import { ProductsService } from './products.service';
 
 describe('ProductsService', () => {
   let service: ProductsService;
@@ -106,6 +110,15 @@ describe('ProductsService', () => {
         {
           provide: ProductsRepository,
           useValue: mockRepo,
+        },
+        {
+          provide: StorageService,
+          useValue: {
+            uploadFile: jest.fn(),
+            uploadProductImage: jest.fn(),
+            deleteFile: jest.fn().mockResolvedValue(true),
+            getPublicUrl: jest.fn(),
+          },
         },
       ],
     }).compile();

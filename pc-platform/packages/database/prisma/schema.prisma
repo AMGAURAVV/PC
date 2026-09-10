@@ -174,6 +174,24 @@ enum ReviewStatus {
   FLAGGED
 }
 
+// ── Community Showcase & Moderation ──────────────────────────────────────────
+
+enum ModerationStatus {
+  PENDING
+  APPROVED
+  HIDDEN
+  REMOVED
+}
+
+enum CommunityReportReason {
+  INAPPROPRIATE_CONTENT
+  MISLEADING_SPECS
+  SPAM
+  OFFENSIVE_IMAGE
+  COPYRIGHT_VIOLATION
+  OTHER
+}
+
 // ── Admin ─────────────────────────────────────────────────────────────────────
 
 enum AuditAction {
@@ -221,6 +239,10 @@ model User {
   reviews          Review[]
   couponUsages     CouponUsage[]
   auditLogsAsActor AuditLog[]     @relation("AuditActor")
+  communityBuilds  CommunityBuild[]
+  communityLikes   CommunityBuildLike[]
+  communityComments CommunityBuildComment[]
+  communityReports CommunityBuildReport[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -448,6 +470,9 @@ model Product {
   @@index([slug])
   @@index([sku])
   @@index([deletedAt])
+  @@index([isActive, deletedAt, createdAt])
+  @@index([isActive, deletedAt, componentType, createdAt])
+  @@index([brandId, isActive, deletedAt])
   @@map("products")
 }
 
@@ -501,6 +526,7 @@ model ProductImage {
   variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
   variantId String?         @map("variant_id")
   url       String
+  storageKey String?        @map("storage_key")
   altText   String?         @map("alt_text")
   isPrimary Boolean         @default(false) @map("is_primary")
   width     Int?
@@ -956,27 +982,40 @@ model Price {
   @@index([variantId])
   @@index([currency])
   @@index([isActive])
+  @@index([productId, isActive])
   @@map("prices")
 }
 
 model PriceHistory {
-  id         String          @id @default(uuid())
-  product    Product         @relation(fields: [productId], references: [id])
-  productId  String          @map("product_id")
-  variant    ProductVariant? @relation(fields: [variantId], references: [id])
-  variantId  String?         @map("variant_id")
-  supplier   Supplier?       @relation(fields: [supplierId], references: [id])
-  supplierId String?         @map("supplier_id")
-  priceType  PriceType       @default(RETAIL) @map("price_type")
-  amount     Decimal         @db.Decimal(12, 2)
-  currency   String          @default("INR")
-  changedBy  String?         @map("changed_by") // admin userId or "system"
-  reason     String? // e.g. "Seasonal sale"
+  id               String          @id @default(uuid())
+  product          Product         @relation(fields: [productId], references: [id])
+  productId        String          @map("product_id")
+  variant          ProductVariant? @relation(fields: [variantId], references: [id])
+  variantId        String?         @map("variant_id")
+  supplier         Supplier?       @relation(fields: [supplierId], references: [id])
+  supplierId       String?         @map("supplier_id")
+  priceType        PriceType       @default(RETAIL) @map("price_type")
+  amount           Decimal         @db.Decimal(12, 2)
+  currency         String          @default("INR")
+  source           String          @default("ADMIN_UPDATE") @map("source")
+  effectiveDate    DateTime        @default(now()) @map("effective_date")
+  endDate          DateTime?       @map("end_date")
+  changedBy        String?         @map("changed_by") // admin userId or "system"
+  reason           String?         // e.g. "Seasonal sale"
+
+  // Administrative correction audit trail
+  isCorrection     Boolean         @default(false) @map("is_correction")
+  originalAmount   Decimal?        @map("original_amount") @db.Decimal(12, 2)
+  correctionReason String?         @map("correction_reason")
+  correctedBy      String?         @map("corrected_by")
+  correctedAt      DateTime?       @map("corrected_at")
 
   createdAt DateTime @default(now()) @map("created_at")
 
   @@index([productId])
   @@index([createdAt])
+  @@index([productId, effectiveDate])
+  @@index([variantId, effectiveDate])
   @@map("price_history")
 }
 
@@ -1002,6 +1041,7 @@ model Build {
   versions    BuildVersion[]
   sharedLinks SharedBuildLink[]
   orders      Order[]
+  communityBuild CommunityBuild?
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -1010,6 +1050,7 @@ model Build {
   @@index([isPublic])
   @@index([status])
   @@index([deletedAt])
+  @@index([userId, deletedAt, createdAt])
   @@map("builds")
 }
 
@@ -1483,6 +1524,7 @@ model Review {
   @@index([userId])
   @@index([status])
   @@index([rating])
+  @@index([productId, deletedAt, createdAt])
   @@map("reviews")
 }
 
@@ -1600,5 +1642,117 @@ model HomepageSection {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("homepage_sections")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMMUNITY BUILD SHOWCASE & MODERATION DOMAIN
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model CommunityBuild {
+  id                   String           @id @default(uuid())
+  slug                 String           @unique
+  name                 String
+  description          String?
+  useCase              String           @default("Gaming") @map("use_case")
+  totalPrice           Decimal          @default(0) @map("total_price") @db.Decimal(12, 2)
+  currency             String           @default("INR")
+  cpuName              String?          @map("cpu_name")
+  gpuName              String?          @map("gpu_name")
+  motherboardName      String?          @map("motherboard_name")
+  ramInfo              String?          @map("ram_info")
+  storageInfo          String?          @map("storage_info")
+  caseName             String?          @map("case_name")
+  psuInfo              String?          @map("psu_info")
+  coolerName           String?          @map("cooler_name")
+  images               String[]
+  components           Json             @default("[]") // [{productId, name, componentType, price, quantity, specs, imageUrl}]
+  compatibilitySummary Json?            @map("compatibility_summary") // { status, estimatedWattage, recommendedPsuW, warnings, notes }
+  authorId             String           @map("author_id")
+  author               User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  buildId              String?          @unique @map("build_id")
+  build                Build?           @relation(fields: [buildId], references: [id], onDelete: SetNull)
+  isFeatured           Boolean          @default(false) @map("is_featured")
+  moderationStatus     ModerationStatus @default(APPROVED) @map("moderation_status")
+  viewCount            Int              @default(0) @map("view_count")
+  likeCount            Int              @default(0) @map("like_count")
+  commentCount         Int              @default(0) @map("comment_count")
+  moderatorNotes       String?          @map("moderator_notes")
+  moderatedAt          DateTime?        @map("moderated_at")
+  moderatedBy          String?          @map("moderated_by")
+  publishedAt          DateTime         @default(now()) @map("published_at")
+
+  // Relations
+  likes    CommunityBuildLike[]
+  comments CommunityBuildComment[]
+  reports  CommunityBuildReport[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([slug])
+  @@index([isFeatured])
+  @@index([moderationStatus])
+  @@index([useCase])
+  @@index([totalPrice])
+  @@index([authorId])
+  @@index([publishedAt])
+  @@index([moderationStatus, publishedAt])
+  @@index([moderationStatus, likeCount])
+  @@index([moderationStatus, isFeatured])
+  @@index([moderationStatus, totalPrice])
+  @@map("community_builds")
+}
+
+model CommunityBuildLike {
+  id        String         @id @default(uuid())
+  build     CommunityBuild @relation(fields: [buildId], references: [id], onDelete: Cascade)
+  buildId   String         @map("build_id")
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String         @map("user_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([buildId, userId])
+  @@index([buildId])
+  @@index([userId])
+  @@map("community_build_likes")
+}
+
+model CommunityBuildComment {
+  id          String         @id @default(uuid())
+  build       CommunityBuild @relation(fields: [buildId], references: [id], onDelete: Cascade)
+  buildId     String         @map("build_id")
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String         @map("user_id")
+  content     String
+  isModerated Boolean        @default(false) @map("is_moderated")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([buildId])
+  @@index([userId])
+  @@map("community_build_comments")
+}
+
+model CommunityBuildReport {
+  id         String                @id @default(uuid())
+  build      CommunityBuild        @relation(fields: [buildId], references: [id], onDelete: Cascade)
+  buildId    String                @map("build_id")
+  user       User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId     String?               @map("user_id")
+  reporterEmail String?            @map("reporter_email")
+  reason     CommunityReportReason
+  details    String?
+  status     String                @default("PENDING") // PENDING, REVIEWED, DISMISSED, ACTIONED
+  resolvedAt DateTime?             @map("resolved_at")
+  resolvedBy String?               @map("resolved_by")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([buildId])
+  @@index([status])
+  @@index([userId])
+  @@map("community_build_reports")
 }
 

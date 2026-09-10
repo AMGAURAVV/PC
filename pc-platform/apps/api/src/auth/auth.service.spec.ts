@@ -1,14 +1,16 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { ConflictException, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import { UserStatus } from '@pc-platform/database';
 import * as bcrypt from 'bcryptjs';
 
-import { AuthService } from './auth.service';
-import { AuthRepository } from './auth.repository';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
-import { RegisterDto } from './dto/register.dto';
-import { UserStatus } from '@pc-platform/database';
+
+import { AuthRepository } from './auth.repository';
+import { AuthService } from './auth.service';
+import type { RegisterDto } from './dto/register.dto';
 
 describe('AuthService', () => {
   let service: AuthService;

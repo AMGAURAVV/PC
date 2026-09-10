@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService, UserStatus } from '@pc-platform/database';
-import { RegisterDto } from './dto/register.dto';
+import type { DatabaseService} from '@pc-platform/database';
+import { UserStatus } from '@pc-platform/database';
+
 import { Role } from '../common/enums/role.enum';
+
+import type { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthRepository {

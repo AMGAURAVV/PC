@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
+
 import { PricesController } from './prices.controller';
-import { PricesService } from './prices.service';
 import { PricesRepository } from './prices.repository';
+import { PricesService } from './prices.service';
 
 @Module({
   imports: [],

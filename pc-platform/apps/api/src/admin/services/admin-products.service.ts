@@ -4,19 +4,22 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { DatabaseService } from '@pc-platform/database';
-import { AdminAuditService } from '../admin-audit.service';
-import {
+import type { DatabaseService } from '@pc-platform/database';
+
+import type { CacheService } from '../../common/cache/cache.service';
+import { PaginatedResponse } from '../../common/dto/response.dto';
+import type { StorageService } from '../../storage/storage.service';
+import type { AdminAuditService } from '../admin-audit.service';
+import { BulkOperationResultDto } from '../dto/admin-common.dto';
+import type {
   AdminProductFilterDto,
   AdminCreateProductDto,
   AdminUpdateProductDto,
   BulkProductStatusDto,
-  BulkProductDeleteDto,
+  BulkProductDeleteDto} from '../dto/admin-product.dto';
+import {
   BulkProductStatusAction,
 } from '../dto/admin-product.dto';
-import { BulkOperationResultDto } from '../dto/admin-common.dto';
-import { PaginatedResponse } from '../../common/dto/response.dto';
-import { CacheService } from '../../common/cache/cache.service';
 
 function generateSlug(text: string): string {
   return text
@@ -24,8 +27,8 @@ function generateSlug(text: string): string {
     .toLowerCase()
     .trim()
     .replace(/\s+/g, '-')
-    .replace(/[^\w\-]+/g, '')
-    .replace(/\-\-+/g, '-');
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-');
 }
 
 @Injectable()
@@ -34,6 +37,7 @@ export class AdminProductsService {
     private readonly db: DatabaseService,
     private readonly audit: AdminAuditService,
     private readonly cache: CacheService,
+    private readonly storage: StorageService,
   ) {}
 
   async findAll(query: AdminProductFilterDto) {
@@ -212,6 +216,21 @@ export class AdminProductsService {
       },
     });
 
+    // Record price history
+    await this.db.priceHistory.create({
+      data: {
+        productId: product.id,
+        amount: dto.basePrice,
+        currency: dto.currency || 'INR',
+        source: 'INITIAL_CREATION',
+        priceType: 'RETAIL',
+        effectiveDate: new Date(),
+        endDate: null,
+        changedBy: actor?.email || actor?.sub || 'admin',
+        reason: 'Initial product creation',
+      },
+    });
+
     // Audit mutation
     await this.audit.record({
       actor,
@@ -268,6 +287,32 @@ export class AdminProductsService {
         inventory: true,
       },
     });
+
+    // Record price history if base price updated
+    if (basePrice !== undefined) {
+      const activeRetailPrice = current.prices?.find((p: any) => p.priceType === 'RETAIL');
+      if (!activeRetailPrice || Number(activeRetailPrice.amount) !== Number(basePrice)) {
+        const effectiveDate = new Date();
+        await this.db.priceHistory.updateMany({
+          where: { productId: id, variantId: null, endDate: null },
+          data: { endDate: effectiveDate },
+        });
+
+        await this.db.priceHistory.create({
+          data: {
+            productId: id,
+            amount: basePrice,
+            currency: activeRetailPrice?.currency || 'INR',
+            source: 'ADMIN_UPDATE',
+            priceType: 'RETAIL',
+            effectiveDate,
+            endDate: null,
+            changedBy: actor?.email || actor?.sub || 'admin',
+            reason: 'Product base price update',
+          },
+        });
+      }
+    }
 
     // Audit mutation
     await this.audit.record({
@@ -535,6 +580,7 @@ export class AdminProductsService {
       data: {
         productId,
         url: data.url,
+        storageKey: data.storageKey,
         altText: data.altText,
         isPrimary: data.isPrimary ?? false,
         sortOrder: data.sortOrder ?? 0,
@@ -579,6 +625,11 @@ export class AdminProductsService {
   }
 
   async deleteImage(productId: string, imageId: string, actor?: any) {
+    const existing = await this.db.productImage.findUnique({ where: { id: imageId } });
+    if (existing?.storageKey) {
+      await this.storage.deleteFile(existing.storageKey).catch(() => {});
+    }
+
     await this.db.productImage.delete({ where: { id: imageId } });
 
     await this.audit.record({

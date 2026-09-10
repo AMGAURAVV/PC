@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from '@pc-platform/database';
-import { CreatePermissionDto, UpdatePermissionDto } from './dto/permission.dto';
+import type { DatabaseService } from '@pc-platform/database';
+
+import type { CreatePermissionDto, UpdatePermissionDto } from './dto/permission.dto';
 
 @Injectable()
 export class PermissionsRepository {

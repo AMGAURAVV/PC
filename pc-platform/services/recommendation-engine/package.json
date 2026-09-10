@@ -1,0 +1,33 @@
+{
+  "name": "@pc-platform/recommendation-engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PC Platform isolated hardware recommendation and scoring engine",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "dev": "nest start --watch",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "node ../../node_modules/.pnpm/node_modules/jest/bin/jest.js",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@nestjs/common": "^10.3.8",
+    "@nestjs/core": "^10.3.8",
+    "@pc-platform/compatibility-engine": "workspace:*",
+    "@pc-platform/types": "workspace:*",
+    "@pc-platform/validation": "workspace:*",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "^10.3.8",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.12.7",
+    "jest": "^30.5.1",
+    "rimraf": "^5.0.5",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.4.5"
+  }
+}

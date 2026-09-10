@@ -11,6 +11,7 @@ import {
   IsString,
   Min,
 } from 'class-validator';
+
 import { AdminPaginationDto } from './admin-common.dto';
 
 export enum AdminPriceType {
@@ -150,3 +151,29 @@ export class PriceHistoryFilterDto extends AdminPaginationDto {
   @IsString()
   variantId?: string;
 }
+
+export class AdminCorrectPriceHistoryDto {
+  @ApiProperty({ example: 42999.00, description: 'Corrected price amount' })
+  @IsNumber()
+  @Min(0)
+  amount!: number;
+
+  @ApiProperty({
+    example: 'Typo in seasonal import; corrected from 429990 to 42999',
+    description: 'Mandatory justification for correcting historical data',
+  })
+  @IsString()
+  @IsNotEmpty()
+  reason!: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsDateString()
+  effectiveDate?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
+}
+

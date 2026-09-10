@@ -1,12 +1,16 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse as SwaggerResponse } from '@nestjs/swagger';
-import { UsersService } from './users.service';
-import { CreateUserDto, UpdateUserDto, UserResponseDto } from './dto/user.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
+
+import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import { Roles } from '../common/decorators/roles.decorator';
+import type { PaginationDto } from '../common/dto/pagination.dto';
+import { RolesGuard } from '../common/guards/roles.guard';
+
+import type { CreateUserDto, UpdateUserDto} from './dto/user.dto';
+import { UserResponseDto } from './dto/user.dto';
+import type { UsersService } from './users.service';
+
 
 @ApiTags('users')
 @ApiBearerAuth('access-token')

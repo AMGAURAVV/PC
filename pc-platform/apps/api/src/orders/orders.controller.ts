@@ -1,12 +1,17 @@
 import { Controller, Get, Post, Body, Patch, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse as SwaggerResponse } from '@nestjs/swagger';
-import { OrdersService } from './orders.service';
-import { CreateOrderDto, UpdateOrderStatusDto, OrderResponseDto } from './dto/order.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
+
+import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import { Roles } from '../common/decorators/roles.decorator';
+import type { PaginationDto } from '../common/dto/pagination.dto';
+import { RolesGuard } from '../common/guards/roles.guard';
+
+import type { CheckoutOrderDto, CheckoutSummaryDto } from './dto/checkout.dto';
+import type { CreateOrderDto, UpdateOrderStatusDto} from './dto/order.dto';
+import { OrderResponseDto } from './dto/order.dto';
+import type { OrdersService } from './orders.service';
+
 
 @ApiTags('orders')
 @ApiBearerAuth('access-token')
@@ -14,6 +19,26 @@ import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
+
+  @Post('checkout-summary')
+  @ApiOperation({ summary: 'Calculate authoritative checkout totals and discounts' })
+  async checkoutSummary(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: CheckoutSummaryDto,
+  ) {
+    const data = await this.ordersService.getCheckoutSummary(user.sub, dto);
+    return { success: true, data };
+  }
+
+  @Post('checkout')
+  @ApiOperation({ summary: 'Execute authoritative 7-step checkout and create order' })
+  async checkout(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: CheckoutOrderDto,
+  ) {
+    const data = await this.ordersService.checkout(user.sub, dto);
+    return { success: true, data };
+  }
 
   @Post()
   @ApiOperation({ summary: 'Create a new order from current active cart' })
@@ -39,7 +64,9 @@ export class OrdersController {
   @ApiOperation({ summary: 'Get an order by ID' })
   @SwaggerResponse({ status: 200, type: OrderResponseDto })
   findOne(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
-    const isAdmin = user.roles.includes('admin') || user.roles.includes('super_admin');
+    const isAdmin = (user.roles ?? []).some(
+      (r) => r.toUpperCase() === 'ADMIN' || r.toUpperCase() === 'SUPER_ADMIN',
+    );
     return this.ordersService.findOne(id, user.sub, isAdmin);
   }
 

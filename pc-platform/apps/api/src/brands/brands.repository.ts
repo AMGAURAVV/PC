@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from '@pc-platform/database';
-import { CreateBrandDto, UpdateBrandDto } from './dto/brand.dto';
+import type { DatabaseService } from '@pc-platform/database';
+
+import type { CreateBrandDto, UpdateBrandDto } from './dto/brand.dto';
 
 @Injectable()
 export class BrandsRepository {

@@ -1,16 +1,19 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DatabaseService } from '@pc-platform/database';
-import { AdminAuditService } from '../admin-audit.service';
-import {
+import type { DatabaseService } from '@pc-platform/database';
+
+import type { CacheService } from '../../common/cache/cache.service';
+import { PaginatedResponse } from '../../common/dto/response.dto';
+import type { AdminAuditService } from '../admin-audit.service';
+import { BulkOperationResultDto } from '../dto/admin-common.dto';
+import type {
   AdminCreatePriceDto,
   AdminUpdatePriceDto,
+  AdminCorrectPriceHistoryDto,
   BulkPriceUpdateDto,
-  BulkPriceAdjustmentType,
-  PriceHistoryFilterDto,
+  PriceHistoryFilterDto} from '../dto/admin-price.dto';
+import {
+  BulkPriceAdjustmentType
 } from '../dto/admin-price.dto';
-import { BulkOperationResultDto } from '../dto/admin-common.dto';
-import { PaginatedResponse } from '../../common/dto/response.dto';
-import { CacheService } from '../../common/cache/cache.service';
 
 @Injectable()
 export class AdminPricesService {
@@ -19,6 +22,50 @@ export class AdminPricesService {
     private readonly audit: AdminAuditService,
     private readonly cache: CacheService,
   ) {}
+
+  private async recordPriceHistory(data: {
+    productId: string;
+    variantId?: string | null;
+    priceType?: any;
+    amount: number | string;
+    currency?: string;
+    source: string;
+    effectiveDate?: Date;
+    changedBy?: string;
+    reason?: string;
+  }) {
+    const effectiveDate = data.effectiveDate || new Date();
+    const variantId = data.variantId || null;
+    const currency = data.currency || 'INR';
+
+    // 1. Close previous open-ended active price history record
+    await this.db.priceHistory.updateMany({
+      where: {
+        productId: data.productId,
+        variantId,
+        endDate: null,
+      },
+      data: {
+        endDate: effectiveDate,
+      },
+    });
+
+    // 2. Append new immutable historical record
+    return this.db.priceHistory.create({
+      data: {
+        productId: data.productId,
+        variantId,
+        priceType: data.priceType || 'RETAIL',
+        amount: data.amount,
+        currency,
+        source: data.source,
+        effectiveDate,
+        endDate: null,
+        changedBy: data.changedBy || 'admin',
+        reason: data.reason || null,
+      },
+    });
+  }
 
   async createPrice(dto: AdminCreatePriceDto, actor?: any) {
     const price = await this.db.price.create({
@@ -36,17 +83,17 @@ export class AdminPricesService {
       include: { product: true },
     });
 
-    // Automatically record price history
-    await this.db.priceHistory.create({
-      data: {
-        productId: dto.productId,
-        variantId: dto.variantId || null,
-        priceType: dto.priceType as any,
-        amount: dto.amount,
-        currency: dto.currency || 'INR',
-        changedBy: actor?.email || actor?.sub || 'admin',
-        reason: dto.reason || 'Initial price creation',
-      },
+    // Automatically record append-only price history
+    await this.recordPriceHistory({
+      productId: dto.productId,
+      variantId: dto.variantId || null,
+      priceType: dto.priceType as any,
+      amount: dto.amount,
+      currency: dto.currency || 'INR',
+      source: 'ADMIN_CREATE',
+      changedBy: actor?.email || actor?.sub || 'admin',
+      reason: dto.reason || 'Initial price creation',
+      effectiveDate: dto.startsAt ? new Date(dto.startsAt) : new Date(),
     });
 
     await this.audit.record({
@@ -86,16 +133,16 @@ export class AdminPricesService {
 
     // Record to price history if amount changed
     if (dto.amount !== undefined && Number(dto.amount) !== Number(current.amount)) {
-      await this.db.priceHistory.create({
-        data: {
-          productId: current.productId,
-          variantId: current.variantId,
-          priceType: current.priceType,
-          amount: dto.amount,
-          currency: current.currency,
-          changedBy: actor?.email || actor?.sub || 'admin',
-          reason: dto.reason || 'Admin price update',
-        },
+      await this.recordPriceHistory({
+        productId: current.productId,
+        variantId: current.variantId,
+        priceType: current.priceType,
+        amount: dto.amount,
+        currency: current.currency,
+        source: 'ADMIN_UPDATE',
+        changedBy: actor?.email || actor?.sub || 'admin',
+        reason: dto.reason || 'Admin price update',
+        effectiveDate: dto.startsAt ? new Date(dto.startsAt) : new Date(),
       });
     }
 
@@ -149,16 +196,15 @@ export class AdminPricesService {
             data: { amount: newAmount },
           });
 
-          await this.db.priceHistory.create({
-            data: {
-              productId,
-              variantId: price.variantId,
-              priceType: price.priceType,
-              amount: newAmount,
-              currency: price.currency,
-              changedBy: actor?.email || actor?.sub || 'admin',
-              reason: dto.reason,
-            },
+          await this.recordPriceHistory({
+            productId,
+            variantId: price.variantId,
+            priceType: price.priceType,
+            amount: newAmount,
+            currency: price.currency,
+            source: 'BULK_UPDATE',
+            changedBy: actor?.email || actor?.sub || 'admin',
+            reason: dto.reason,
           });
         }
         successCount++;
@@ -199,7 +245,7 @@ export class AdminPricesService {
         where,
         skip: query.skip,
         take: query.limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { effectiveDate: 'desc' },
         include: {
           product: { select: { id: true, name: true, sku: true } },
           variant: { select: { id: true, name: true, sku: true } },
@@ -209,5 +255,72 @@ export class AdminPricesService {
     ]);
 
     return PaginatedResponse.ok(items, query.page, query.limit, total);
+  }
+
+  async correctHistoricalPrice(id: string, dto: AdminCorrectPriceHistoryDto, actor?: any) {
+    const current = await this.db.priceHistory.findUnique({
+      where: { id },
+      include: {
+        product: { select: { id: true, name: true, sku: true } },
+        variant: { select: { id: true, name: true, sku: true } },
+      },
+    });
+
+    if (!current) {
+      throw new NotFoundException(`Price history record with ID "${id}" not found`);
+    }
+
+    const originalAmount = current.originalAmount !== null ? current.originalAmount : current.amount;
+    const actorIdentifier = actor?.email || actor?.sub || 'admin';
+    const correctedAt = new Date();
+
+    const updated = await this.db.priceHistory.update({
+      where: { id },
+      data: {
+        amount: dto.amount,
+        ...(dto.effectiveDate ? { effectiveDate: new Date(dto.effectiveDate) } : {}),
+        ...(dto.endDate !== undefined ? { endDate: dto.endDate ? new Date(dto.endDate) : null } : {}),
+        isCorrection: true,
+        originalAmount,
+        correctionReason: dto.reason,
+        correctedBy: actorIdentifier,
+        correctedAt,
+      },
+      include: {
+        product: { select: { id: true, name: true, sku: true } },
+        variant: { select: { id: true, name: true, sku: true } },
+      },
+    });
+
+    // Record immutable audit entry
+    await this.audit.record({
+      actor,
+      action: 'PRICE_HISTORY_CORRECTION',
+      entityType: 'PriceHistory',
+      entityId: id,
+      entityLabel: `${current.product.name} Historical Price Correction (${Number(current.amount)} -> ${Number(dto.amount)})`,
+      before: {
+        amount: Number(current.amount),
+        effectiveDate: current.effectiveDate,
+        endDate: current.endDate,
+        isCorrection: current.isCorrection,
+      },
+      after: {
+        amount: Number(updated.amount),
+        effectiveDate: updated.effectiveDate,
+        endDate: updated.endDate,
+        isCorrection: true,
+        originalAmount: Number(originalAmount),
+        correctionReason: dto.reason,
+      },
+      metadata: {
+        reason: dto.reason,
+        originalAmount: Number(originalAmount),
+        correctedAmount: Number(dto.amount),
+      },
+    });
+
+    this.cache.invalidateByTag('catalog:products');
+    return updated;
   }
 }

@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { AdminRepository } from './admin.repository';
-import { PaginationDto } from '../common/dto/pagination.dto';
+
+import type { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginatedResponse } from '../common/dto/response.dto';
-import { AuditLogResponseDto, DashboardSummaryDto } from './dto/admin.dto';
+
+import type { AdminRepository } from './admin.repository';
+import type { AuditLogResponseDto, DashboardSummaryDto } from './dto/admin.dto';
 
 @Injectable()
 export class AdminService {

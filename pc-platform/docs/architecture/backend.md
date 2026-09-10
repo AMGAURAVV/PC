@@ -12,6 +12,7 @@
 3. **Prisma via abstraction** — all DB access through `DatabaseService`, not raw Prisma imports
 4. **Zod for input validation** — all incoming DTOs are validated at the controller/pipe layer
 5. **Compatibility is external** — the API calls the compatibility engine; no rules live here
+6. **Object-storage abstraction** — application never assumes images are stored on the local filesystem in production; all media interactions use `StorageProvider` (LocalStorageProvider in dev, GoogleCloudStorageProvider in prod).
 
 ---
 
@@ -98,6 +99,13 @@ apps/api/
 │   │   ├── products/              # Admin product CRUD
 │   │   ├── orders/                # Order fulfillment
 │   │   └── users/                 # User management
+│   │
+│   ├── storage/                   # Object storage provider abstraction
+│   │   ├── interfaces/            # StorageProvider interface & tokens
+│   │   ├── providers/             # LocalStorageProvider, GoogleCloudStorageProvider
+│   │   ├── storage.service.ts     # Upload & delete business logic
+│   │   ├── storage.controller.ts  # Multipart upload endpoints
+│   │   └── storage.module.ts
 │   │
 │   └── health/                    # Health check endpoint
 │       └── health.controller.ts

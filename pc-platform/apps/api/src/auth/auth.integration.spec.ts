@@ -1,17 +1,22 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { JwtService, JwtModule } from '@nestjs/jwt';
+import type { INestApplication} from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Reflector } from '@nestjs/core';
+import { JwtService, JwtModule } from '@nestjs/jwt';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import { UserStatus } from '@pc-platform/database';
 import * as bcrypt from 'bcryptjs';
 
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { AuthRepository } from './auth.repository';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
-import { UserStatus } from '@pc-platform/database';
 import { Role } from '../common/enums/role.enum';
 import { RolesGuard } from '../common/guards/roles.guard';
-import { Reflector } from '@nestjs/core';
+
+import { AuthController } from './auth.controller';
+import { AuthRepository } from './auth.repository';
+import { AuthService } from './auth.service';
+
+
 
 describe('Auth Integration & Security Suite', () => {
   let app: INestApplication;

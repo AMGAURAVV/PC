@@ -8,16 +8,17 @@
  *   ← GET /api/v1/products 200 [42ms]
  */
 
-import {
+import type {
   CallHandler,
   ExecutionContext,
+  NestInterceptor} from '@nestjs/common';
+import {
   Injectable,
-  Logger,
-  NestInterceptor,
+  Logger
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import type { Request, Response } from 'express';
+import type { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { Request, Response } from 'express';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {

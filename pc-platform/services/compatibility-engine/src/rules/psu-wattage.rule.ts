@@ -1,60 +1,72 @@
-import type { BuildComponents } from '@pc-platform/types';
-import type { CompatibilityRule, RuleResult } from './rule.interface';
+import { CompatibilityCategory } from '@pc-platform/types';
 
-const PSU_HEADROOM_THRESHOLD = 0.8; // Warn if system TDP > 80% of PSU capacity
+import type { RuleContext } from '../parser/rule-context';
 
-/**
- * PSU Wattage Rule
- *
- * Calculates estimated system TDP and validates PSU capacity.
- * Generates an error if TDP exceeds PSU wattage.
- * Generates a warning if TDP exceeds 80% of PSU wattage (headroom check).
- */
+import type { CompatibilityRule, RuleEvaluationResult } from './rule.interface';
+
 export const psuWattageRule: CompatibilityRule = {
   id: 'psu-wattage',
-  name: 'PSU Wattage Check',
-  description:
-    'Validates that PSU wattage covers estimated system TDP with appropriate headroom',
+  name: 'PSU Continuous Wattage Capacity',
+  description: 'Validates that the power supply continuous rated output meets or exceeds the total estimated peak system power draw',
+  category: CompatibilityCategory.POWER,
+  priority: 45,
 
-  check(components: BuildComponents): RuleResult {
-    const { psu, cpu, gpu } = components;
+  condition(ctx: RuleContext): boolean {
+    return !!ctx.normalized.psu && (!!ctx.normalized.cpu || !!ctx.normalized.gpu);
+  },
 
-    if (!psu) return { passed: true, issues: [], warnings: [] };
+  evaluate(ctx: RuleContext): RuleEvaluationResult {
+    const psu = ctx.normalized.psu!;
+    const estimatedTdpW = ctx.computed.estimatedSystemTdpW;
 
-    const psuWattage = psu.specs['wattage'] as number | undefined;
-    if (!psuWattage) return { passed: true, issues: [], warnings: [] };
-
-    let estimatedTdp = 50; // Base system overhead (motherboard, RAM, storage)
-    if (cpu?.specs['tdp']) estimatedTdp += cpu.specs['tdp'] as number;
-    if (gpu?.specs['tdp']) estimatedTdp += gpu.specs['tdp'] as number;
-
-    const issues = [];
-    const warnings = [];
-
-    if (estimatedTdp > psuWattage) {
-      issues.push({
-        severity: 'error' as const,
-        rule: 'psu-wattage',
-        message: `Estimated system power draw (${estimatedTdp}W) exceeds PSU capacity (${psuWattage}W).`,
-        components: [
-          psu.productId,
-          ...(cpu ? [cpu.productId] : []),
-          ...(gpu ? [gpu.productId] : []),
+    if (!psu.wattage) {
+      return {
+        passed: false,
+        status: 'unknown',
+        issues: [
+          {
+            severity: 'unknown',
+            category: CompatibilityCategory.POWER,
+            ruleId: 'psu-wattage',
+            rule: 'psu-wattage',
+            title: 'Unknown PSU Wattage Specification',
+            explanation: `Power supply ${psu.name} does not have a rated continuous wattage specified.`,
+            message: `Missing wattage rating for ${psu.name}.`,
+            affectedComponents: [psu.productId],
+            components: [psu.productId],
+            suggestedResolution: 'Specify continuous wattage rating (e.g. 750W, 850W, 1000W).',
+          },
         ],
-      });
-    } else if (estimatedTdp > psuWattage * PSU_HEADROOM_THRESHOLD) {
-      warnings.push({
-        severity: 'warning' as const,
-        rule: 'psu-wattage',
-        message: `Estimated system power draw (${estimatedTdp}W) is above 80% of PSU capacity (${psuWattage}W). Consider a higher wattage PSU for stability and headroom.`,
-        components: [psu.productId],
-      });
+        warnings: [],
+      };
     }
 
-    return {
-      passed: issues.length === 0,
-      issues,
-      warnings,
-    };
+    if (estimatedTdpW > psu.wattage) {
+      const affected = [psu.productId];
+      if (ctx.normalized.cpu) affected.push(ctx.normalized.cpu.productId);
+      if (ctx.normalized.gpu) affected.push(ctx.normalized.gpu.productId);
+
+      return {
+        passed: false,
+        status: 'incompatible',
+        issues: [
+          {
+            severity: 'error',
+            category: CompatibilityCategory.POWER,
+            ruleId: 'psu-wattage',
+            rule: 'psu-wattage',
+            title: 'PSU Wattage Deficit (System Power Draw Exceeds Capacity)',
+            explanation: `The estimated peak system power draw (${estimatedTdpW}W) exceeds the continuous rated wattage of ${psu.name} (${psu.wattage}W). Under gaming or computational load, the system will trigger Over-Power Protection (OPP), shutdown unexpectedly, or fail to boot.`,
+            message: `Estimated power draw (${estimatedTdpW}W) exceeds PSU capacity (${psu.wattage}W).`,
+            affectedComponents: affected,
+            components: affected,
+            suggestedResolution: `Upgrade to a power supply with at least ${ctx.computed.recommendedPsuWattageW}W continuous capacity.`,
+          },
+        ],
+        warnings: [],
+      };
+    }
+
+    return { passed: true, issues: [], warnings: [] };
   },
 };
