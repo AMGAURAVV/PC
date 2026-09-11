@@ -3,12 +3,11 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse as SwaggerResponse, A
 
 import { Public } from '../common/decorators/public.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
-import type { PaginationDto } from '../common/dto/pagination.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 import { RolesGuard } from '../common/guards/roles.guard';
 
-import type { BrandsService } from './brands.service';
-import type { CreateBrandDto, UpdateBrandDto} from './dto/brand.dto';
-import { BrandResponseDto } from './dto/brand.dto';
+import { BrandsService } from './brands.service';
+import { CreateBrandDto, UpdateBrandDto, BrandResponseDto } from './dto/brand.dto';
 
 @ApiTags('brands')
 @Controller('brands')

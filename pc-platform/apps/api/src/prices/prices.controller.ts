@@ -5,14 +5,13 @@ import { Public } from '../common/decorators/public.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
 
-import type {
-  CreatePriceDto,
-  PriceHistoryQueryDto} from './dto/price.dto';
 import {
+  CreatePriceDto,
+  PriceHistoryQueryDto,
   PriceResponseDto,
   ProductPriceSummaryResponseDto,
 } from './dto/price.dto';
-import type { PricesService } from './prices.service';
+import { PricesService } from './prices.service';
 
 
 @ApiTags('prices')

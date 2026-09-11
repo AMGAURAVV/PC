@@ -7,15 +7,15 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
-import type { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { AuditAction, UserStatus } from '@pc-platform/database';
 import * as bcrypt from 'bcryptjs';
 
-import type { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { Role } from '../common/enums/role.enum';
 
-import type { AuthRepository } from './auth.repository';
+import { AuthRepository } from './auth.repository';
 import type { AuthResponseDto, UserProfileDto } from './dto/auth-response.dto';
 import type { VerifyEmailDto, ResendVerificationDto } from './dto/email-verification.dto';
 import type { GoogleAuthDto } from './dto/google-auth.dto';

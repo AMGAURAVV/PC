@@ -23,24 +23,22 @@ import { Public } from '../common/decorators/public.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
 
-import type {
-  CompareProductsQueryDto} from './dto/product-compare.dto';
 import {
+  CompareProductsQueryDto,
   ProductComparisonResponseDto,
 } from './dto/product-compare.dto';
-import type { ProductFilterDto } from './dto/product-filter.dto';
-import type { CreateProductImageDto } from './dto/product-image.dto';
-import type {
+import { ProductFilterDto } from './dto/product-filter.dto';
+import { CreateProductImageDto } from './dto/product-image.dto';
+import {
   CreateProductVariantDto,
   UpdateProductVariantDto,
 } from './dto/product-variant.dto';
-import type {
-  CreateProductDto,
-  UpdateProductDto} from './dto/product.dto';
 import {
+  CreateProductDto,
+  UpdateProductDto,
   ProductResponseDto,
 } from './dto/product.dto';
-import type { ProductsService } from './products.service';
+import { ProductsService } from './products.service';
 
 
 @ApiTags('products')

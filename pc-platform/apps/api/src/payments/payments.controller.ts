@@ -20,8 +20,8 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 
-import type { CreatePaymentIntentDto, VerifyPaymentDto, RefundPaymentDto } from './dto/payment.dto';
-import type { PaymentsService } from './payments.service';
+import { CreatePaymentIntentDto, VerifyPaymentDto, RefundPaymentDto } from './dto/payment.dto';
+import { PaymentsService } from './payments.service';
 
 
 @Controller('payments')

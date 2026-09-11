@@ -1,14 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import type { CacheService } from '../common/cache/cache.service';
+import { CacheService } from '../common/cache/cache.service';
 
 import type { SearchQueryDto, SuggestQueryDto } from './dto/search.dto';
-import type {
+import {
   SearchProvider,
   SearchResult,
   SearchSuggestion,
-  SearchOptions} from './interfaces/search-provider.interface';
-import {
+  SearchOptions,
   SEARCH_PROVIDER_TOKEN
 } from './interfaces/search-provider.interface';
 

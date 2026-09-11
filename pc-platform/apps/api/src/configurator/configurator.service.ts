@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import type { DatabaseService} from '@pc-platform/database';
-import { ComponentType } from '@pc-platform/database';
+import { DatabaseService, ComponentType } from '@pc-platform/database';
 import type {
   UseCaseDefinition,
   ConfiguratorBaseBuild,

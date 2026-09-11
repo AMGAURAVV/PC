@@ -3,8 +3,8 @@ import type { ApiResponse, RecommendationResult } from '@pc-platform/types';
 
 import { Public } from '../common/decorators/public.decorator';
 
-import type { RecommendationRequestDto } from './dto/recommendation-request.dto';
-import type { RecommendationsService } from './recommendations.service';
+import { RecommendationRequestDto } from './dto/recommendation-request.dto';
+import { RecommendationsService } from './recommendations.service';
 
 @Controller('recommendations')
 export class RecommendationsController {

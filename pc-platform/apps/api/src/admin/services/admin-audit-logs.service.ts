@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import type { DatabaseService } from '@pc-platform/database';
+import { DatabaseService } from '@pc-platform/database';
 
 import { PaginatedResponse } from '../../common/dto/response.dto';
 import type { AdminAuditLogFilterDto } from '../dto/admin-audit-filter.dto';

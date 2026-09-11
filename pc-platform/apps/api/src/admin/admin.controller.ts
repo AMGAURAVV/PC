@@ -5,7 +5,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { RolesGuard } from '../common/guards/roles.guard';
 
-import type { AdminService } from './admin.service';
+import { AdminService } from './admin.service';
 import { DashboardSummaryDto } from './dto/admin.dto';
 
 @ApiTags('admin')

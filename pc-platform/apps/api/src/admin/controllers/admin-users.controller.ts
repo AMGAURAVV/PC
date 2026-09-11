@@ -16,13 +16,13 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import type {
+import {
   AdminUserFilterDto,
   AdminUpdateUserStatusDto,
   AdminAssignRolesDto,
   BulkUserStatusDto,
 } from '../dto/admin-user.dto';
-import type { AdminUsersService } from '../services/admin-users.service';
+import { AdminUsersService } from '../services/admin-users.service';
 
 @ApiTags('admin-users')
 @ApiBearerAuth('access-token')

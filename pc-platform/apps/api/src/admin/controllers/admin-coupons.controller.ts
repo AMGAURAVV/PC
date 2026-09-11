@@ -16,13 +16,13 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import type {
+import {
   CreateCouponDto,
   UpdateCouponDto,
   BulkCouponStatusDto,
   CouponFilterDto,
 } from '../dto/admin-coupon.dto';
-import type { AdminCouponsService } from '../services/admin-coupons.service';
+import { AdminCouponsService } from '../services/admin-coupons.service';
 
 @ApiTags('admin-coupons')
 @ApiBearerAuth('access-token')

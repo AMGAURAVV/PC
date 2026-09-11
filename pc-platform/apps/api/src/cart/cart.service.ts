@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 
-import type { CartRepository } from './cart.repository';
+import { CartRepository } from './cart.repository';
 import type { AddToCartDto, UpdateCartItemDto, CartResponseDto } from './dto/cart.dto';
 
 @Injectable()

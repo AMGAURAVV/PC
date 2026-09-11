@@ -5,12 +5,11 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse as SwaggerResponse } 
 import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Public } from '../common/decorators/public.decorator';
-import type { PaginationDto } from '../common/dto/pagination.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 import { RolesGuard } from '../common/guards/roles.guard';
 
-import { ReviewResponseDto } from './dto/review.dto';
-import type { CreateReviewDto, UpdateReviewDto} from './dto/review.dto';
-import type { ReviewsService } from './reviews.service';
+import { ReviewResponseDto , CreateReviewDto, UpdateReviewDto} from './dto/review.dto';
+import { ReviewsService } from './reviews.service';
 
 @ApiTags('reviews')
 @Controller('reviews')

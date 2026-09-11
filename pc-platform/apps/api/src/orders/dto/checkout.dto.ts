@@ -123,5 +123,9 @@ export class CheckoutOrderDto implements CheckoutOrderInput {
 
   @IsString()
   @IsOptional()
+  paymentMethod?: string;
+
+  @IsString()
+  @IsOptional()
   notes?: string;
 }

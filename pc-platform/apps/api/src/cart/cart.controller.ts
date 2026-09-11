@@ -5,9 +5,8 @@ import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
 
-import type { CartService } from './cart.service';
-import type { AddToCartDto, UpdateCartItemDto} from './dto/cart.dto';
-import { CartResponseDto } from './dto/cart.dto';
+import { CartService } from './cart.service';
+import { AddToCartDto, UpdateCartItemDto, CartResponseDto } from './dto/cart.dto';
 
 @ApiTags('cart')
 @ApiBearerAuth('access-token')

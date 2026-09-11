@@ -16,8 +16,8 @@
  */
 
 import * as crypto from 'crypto';
-import type { PrismaClient } from '../src/generated';
-import { UserStatus } from '../src/generated';
+import type { PrismaClient } from '../../src/generated';
+import { UserStatus } from '../../src/generated';
 
 // ⚠️  For seed only. Production uses bcrypt in the API.
 function demoHash(password: string): string {

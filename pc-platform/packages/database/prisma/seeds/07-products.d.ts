@@ -25,6 +25,6 @@
  *   - Price row (DEMO)
  *   - PriceHistory entry
  */
-import type { PrismaClient } from '../src/generated';
+import type { PrismaClient } from '../../src/generated';
 export declare function seedProducts(prisma: PrismaClient): Promise<void>;
 //# sourceMappingURL=07-products.d.ts.map

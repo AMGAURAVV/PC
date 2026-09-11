@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { DatabaseService} from '@pc-platform/database';
-import { UserStatus } from '@pc-platform/database';
+import { DatabaseService, UserStatus } from '@pc-platform/database';
 
 import { Role } from '../common/enums/role.enum';
 

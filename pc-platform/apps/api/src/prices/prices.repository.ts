@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { DatabaseService } from '@pc-platform/database';
+import { DatabaseService } from '@pc-platform/database';
 
 import type { CreatePriceDto} from './dto/price.dto';
 import { PriceHistoryQueryDto } from './dto/price.dto';

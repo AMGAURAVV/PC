@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { DatabaseService, Prisma } from '@pc-platform/database';
-import { ModerationStatus } from '@pc-platform/database';
+import { DatabaseService, Prisma , ModerationStatus } from '@pc-platform/database';
 
 @Injectable()
 export class CommunityRepository {

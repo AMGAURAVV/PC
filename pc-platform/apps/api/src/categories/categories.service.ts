@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-import type { CacheService } from '../common/cache/cache.service';
+import { CacheService } from '../common/cache/cache.service';
 
-import type { CategoriesRepository } from './categories.repository';
+import { CategoriesRepository } from './categories.repository';
 import type { CreateCategoryDto, UpdateCategoryDto, CategoryResponseDto } from './dto/category.dto';
 
 function generateSlug(text: string): string {

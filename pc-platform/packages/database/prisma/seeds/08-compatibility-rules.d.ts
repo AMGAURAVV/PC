@@ -17,6 +17,6 @@
  *   7. GPU slot width ≤ case available PCI slots (ERROR)
  *   8. RAM capacity ≤ Motherboard max RAM (WARNING)
  */
-import type { PrismaClient } from '../src/generated';
+import type { PrismaClient } from '../../src/generated';
 export declare function seedCompatibilityRules(prisma: PrismaClient): Promise<void>;
 //# sourceMappingURL=08-compatibility-rules.d.ts.map

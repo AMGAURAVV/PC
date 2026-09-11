@@ -6,7 +6,7 @@
  * Sub-categories provide finer navigation.
  */
 
-import type { PrismaClient } from '../src/generated';
+import type { PrismaClient } from '../../src/generated';
 
 export async function seedCategories(prisma: PrismaClient) {
   // ── Root categories ───────────────────────────────────────────

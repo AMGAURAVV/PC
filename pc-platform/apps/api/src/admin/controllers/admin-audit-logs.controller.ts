@@ -9,8 +9,8 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import type { AdminAuditLogFilterDto } from '../dto/admin-audit-filter.dto';
-import type { AdminAuditLogsService } from '../services/admin-audit-logs.service';
+import { AdminAuditLogFilterDto } from '../dto/admin-audit-filter.dto';
+import { AdminAuditLogsService } from '../services/admin-audit-logs.service';
 
 @ApiTags('admin-audit-logs')
 @ApiBearerAuth('access-token')

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { DatabaseService } from '@pc-platform/database';
+import { DatabaseService } from '@pc-platform/database';
 
 export interface AuditRecordParams {
   actor?: { id?: string; email?: string; sub?: string } | null;

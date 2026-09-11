@@ -4,12 +4,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type { DatabaseService } from '@pc-platform/database';
+import { DatabaseService } from '@pc-platform/database';
 
-import type { CacheService } from '../../common/cache/cache.service';
+import { CacheService } from '../../common/cache/cache.service';
 import { PaginatedResponse } from '../../common/dto/response.dto';
-import type { StorageService } from '../../storage/storage.service';
-import type { AdminAuditService } from '../admin-audit.service';
+import { StorageService } from '../../storage/storage.service';
+import { AdminAuditService } from '../admin-audit.service';
 import { BulkOperationResultDto } from '../dto/admin-common.dto';
 import type {
   AdminProductFilterDto,

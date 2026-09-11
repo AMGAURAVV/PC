@@ -16,8 +16,8 @@ import type {
 import type { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginatedResponse } from '../common/dto/response.dto';
 
-import type { BuildsRepository } from './builds.repository';
-import type { CompatibilityClientService } from './compatibility-client.service';
+import { BuildsRepository } from './builds.repository';
+import { CompatibilityClientService } from './compatibility-client.service';
 import type {
   CreateBuildDto,
   UpdateBuildDto,

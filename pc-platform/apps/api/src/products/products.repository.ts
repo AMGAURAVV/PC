@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { DatabaseService } from '@pc-platform/database';
+import { DatabaseService } from '@pc-platform/database';
 
 import type { ProductFilterDto} from './dto/product-filter.dto';
 import { ProductSortBy } from './dto/product-filter.dto';

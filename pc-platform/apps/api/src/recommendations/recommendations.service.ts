@@ -1,9 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { DatabaseService} from '@pc-platform/database';
-import { ComponentType } from '@pc-platform/database';
-import type {
+import { DatabaseService, ComponentType } from '@pc-platform/database';
+import {
   RecommendationService as CoreRecommendationEngineService,
-  HardwarePool,
+  type HardwarePool,
 } from '@pc-platform/recommendation-engine';
 import type {
   Product,

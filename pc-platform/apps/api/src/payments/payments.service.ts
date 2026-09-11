@@ -6,17 +6,15 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import type { DatabaseService} from '@pc-platform/database';
-import { OrderStatus, PaymentStatus } from '@pc-platform/database';
+import { DatabaseService, OrderStatus, PaymentStatus } from '@pc-platform/database';
 import type {
   PaymentIntentResponse,
   PaymentVerificationResponse,
 } from '@pc-platform/types';
 
 import type { CreatePaymentIntentDto, VerifyPaymentDto, RefundPaymentDto } from './dto/payment.dto';
-import type {
-  PaymentProvider} from './interfaces/payment-provider.interface';
 import {
+  PaymentProvider,
   PAYMENT_PROVIDER_TOKEN,
 } from './interfaces/payment-provider.interface';
 

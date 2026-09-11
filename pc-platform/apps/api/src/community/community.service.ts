@@ -2,9 +2,9 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import type { Prisma } from '@pc-platform/database';
 import { ModerationStatus } from '@pc-platform/database';
 
-import type { CacheService } from '../common/cache/cache.service';
+import { CacheService } from '../common/cache/cache.service';
 
-import type { CommunityRepository } from './community.repository';
+import { CommunityRepository } from './community.repository';
 import type {
   QueryCommunityBuildsDto,
   PublishCommunityBuildDto,

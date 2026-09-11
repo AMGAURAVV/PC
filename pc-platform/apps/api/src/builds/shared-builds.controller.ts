@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse as SwaggerResponse, ApiParam } from 
 
 import { Public } from '../common/decorators/public.decorator';
 
-import type { BuildsService } from './builds.service';
+import { BuildsService } from './builds.service';
 import { SharedBuildResponseDto } from './dto/build.dto';
 
 @ApiTags('builds')

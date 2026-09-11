@@ -4,7 +4,7 @@ import type { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginatedResponse } from '../common/dto/response.dto';
 
 import type { CreateInventoryDto, UpdateInventoryDto, InventoryResponseDto } from './dto/inventory.dto';
-import type { InventoryRepository } from './inventory.repository';
+import { InventoryRepository } from './inventory.repository';
 
 @Injectable()
 export class InventoryService {

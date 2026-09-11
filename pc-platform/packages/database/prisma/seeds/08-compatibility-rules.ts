@@ -18,8 +18,8 @@
  *   8. RAM capacity ≤ Motherboard max RAM (WARNING)
  */
 
-import type { PrismaClient } from '../src/generated';
-import { CompatibilityRuleType, CompatibilitySeverity, ComponentType } from '../src/generated';
+import type { PrismaClient } from '../../src/generated';
+import { CompatibilityRuleType, CompatibilitySeverity, ComponentType } from '../../src/generated';
 
 const RULES = [
   {

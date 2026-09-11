@@ -5,7 +5,7 @@
  * Permission format: "<module>:<action>"
  */
 
-import type { PrismaClient } from '../src/generated';
+import type { PrismaClient } from '../../src/generated';
 
 const PERMISSIONS = [
   // ── Products ──────────────────────────────────────────────────

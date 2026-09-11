@@ -2,10 +2,9 @@ import * as path from 'path';
 
 import { Injectable, Inject, Logger, BadRequestException } from '@nestjs/common';
 
-import type {
-  StorageProvider,
-  UploadResult} from './interfaces/storage-provider.interface';
 import {
+  StorageProvider,
+  UploadResult,
   STORAGE_PROVIDER_TOKEN
 } from './interfaces/storage-provider.interface';
 

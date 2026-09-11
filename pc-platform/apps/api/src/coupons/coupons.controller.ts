@@ -17,8 +17,8 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 
-import type { CouponsService } from './coupons.service';
-import type { ValidateCouponDto, CreateCouponDto } from './dto/coupon.dto';
+import { CouponsService } from './coupons.service';
+import { ValidateCouponDto, CreateCouponDto } from './dto/coupon.dto';
 
 
 @Controller('coupons')

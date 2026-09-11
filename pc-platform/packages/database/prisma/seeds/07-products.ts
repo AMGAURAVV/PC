@@ -26,8 +26,8 @@
  *   - PriceHistory entry
  */
 
-import type { PrismaClient } from '../src/generated';
-import { ComponentType, PriceType } from '../src/generated';
+import type { PrismaClient } from '../../src/generated';
+import { ComponentType, PriceType } from '../../src/generated';
 
 // [DEMO] Prices are illustrative only — not real market prices
 const DEMO_PRICES: Record<string, number> = {
@@ -718,54 +718,65 @@ export async function seedProducts(prisma: PrismaClient) {
     }
 
     // Inventory (Platform supplier)
-    await prisma.inventory.upsert({
+    const existingInventory = await prisma.inventory.findFirst({
       where: {
-        productId_variantId_supplierId: {
-          productId: product.id,
-          variantId: null,
-          supplierId: supplier.id,
-        },
-      },
-      update: {},
-      create: {
         productId: product.id,
+        variantId: null,
         supplierId: supplier.id,
-        quantity: p.stock ?? 10,
-        lowStockThreshold: 3,
       },
     });
+    if (!existingInventory) {
+      await prisma.inventory.create({
+        data: {
+          productId: product.id,
+          supplierId: supplier.id,
+          quantity: p.stock ?? 10,
+          lowStockThreshold: 3,
+        },
+      });
+    }
 
     // [DEMO] Price — clearly marked as demo data
     const demoAmount = DEMO_PRICES[p.sku] ?? 9999;
-    await prisma.price.upsert({
+    const existingPrice = await prisma.price.findFirst({
       where: {
-        productId_variantId_priceType_currency: {
-          productId: product.id,
-          variantId: null,
-          priceType: PriceType.RETAIL,
-          currency: 'INR',
-        },
-      },
-      update: {},
-      create: {
         productId: product.id,
+        variantId: null,
         priceType: PriceType.RETAIL,
-        amount: demoAmount,
         currency: 'INR',
       },
     });
+    if (!existingPrice) {
+      await prisma.price.create({
+        data: {
+          productId: product.id,
+          priceType: PriceType.RETAIL,
+          amount: demoAmount,
+          currency: 'INR',
+          isActive: true,
+        },
+      });
+    }
 
     // Price history entry
-    await prisma.priceHistory.create({
-      data: {
+    const existingHistory = await prisma.priceHistory.findFirst({
+      where: {
         productId: product.id,
-        priceType: PriceType.RETAIL,
-        amount: demoAmount,
-        currency: 'INR',
-        changedBy: 'system',
         reason: '[DEMO] Initial seed price — not real market pricing',
       },
     });
+    if (!existingHistory) {
+      await prisma.priceHistory.create({
+        data: {
+          productId: product.id,
+          priceType: PriceType.RETAIL,
+          amount: demoAmount,
+          currency: 'INR',
+          changedBy: 'system',
+          reason: '[DEMO] Initial seed price — not real market pricing',
+        },
+      });
+    }
 
     productCount++;
   }

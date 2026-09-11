@@ -24,11 +24,11 @@ import {
 import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Public } from '../common/decorators/public.decorator';
-import type { PaginationDto } from '../common/dto/pagination.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 import { RolesGuard } from '../common/guards/roles.guard';
 
-import type { BuildsService } from './builds.service';
-import type {
+import { BuildsService } from './builds.service';
+import {
   CreateBuildDto,
   UpdateBuildDto,
   AddBuildItemDto,
@@ -36,8 +36,7 @@ import type {
   ReorderBuildItemsDto,
   SaveBuildVersionDto,
   ShareBuildDto,
-  EvaluateBuildDto} from './dto/build.dto';
-import {
+  EvaluateBuildDto,
   BuildResponseDto,
   BuildVersionResponseDto,
   SharedBuildResponseDto,

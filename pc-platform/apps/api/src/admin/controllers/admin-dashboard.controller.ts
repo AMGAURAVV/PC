@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import type { AdminDashboardService } from '../services/admin-dashboard.service';
+import { AdminDashboardService } from '../services/admin-dashboard.service';
 
 @ApiTags('admin-dashboard')
 @ApiBearerAuth('access-token')

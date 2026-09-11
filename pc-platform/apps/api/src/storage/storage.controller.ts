@@ -15,7 +15,7 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nes
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
 
-import type { StorageService } from './storage.service';
+import { StorageService } from './storage.service';
 
 @ApiTags('storage')
 @Controller('storage')

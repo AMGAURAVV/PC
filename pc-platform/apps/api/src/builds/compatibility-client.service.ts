@@ -1,6 +1,6 @@
-import type { HttpService } from '@nestjs/axios';
+import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { CompatibilityService as InProcessCompatibilityService } from '@pc-platform/compatibility-engine';
 import type { BuildComponents, CompatibilityResult } from '@pc-platform/types';
 import { firstValueFrom } from 'rxjs';

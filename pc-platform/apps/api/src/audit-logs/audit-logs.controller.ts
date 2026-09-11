@@ -5,7 +5,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 
-import type { AuditLogsService } from './audit-logs.service';
+import { AuditLogsService } from './audit-logs.service';
 
 @ApiTags('Admin / Audit Logs')
 @ApiBearerAuth()

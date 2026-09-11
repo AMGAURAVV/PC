@@ -14,6 +14,6 @@
  *   ops@pcplatform.in     / [DEMO] Ops@Demo2024!     → admin role
  *   demo@example.com      / [DEMO] Demo@Demo2024!    → customer role
  */
-import type { PrismaClient } from '../src/generated';
+import type { PrismaClient } from '../../src/generated';
 export declare function seedUsers(prisma: PrismaClient): Promise<void>;
 //# sourceMappingURL=09-users.d.ts.map

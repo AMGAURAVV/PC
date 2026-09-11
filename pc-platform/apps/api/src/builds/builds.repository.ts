@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { DatabaseService, ComponentType, Prisma } from '@pc-platform/database';
+import { DatabaseService, ComponentType, Prisma } from '@pc-platform/database';
 
 export const buildInclude = {
   items: {

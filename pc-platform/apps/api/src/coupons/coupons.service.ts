@@ -5,8 +5,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import type { DatabaseService} from '@pc-platform/database';
-import { CouponType } from '@pc-platform/database';
+import { DatabaseService, CouponType } from '@pc-platform/database';
 import type { CouponValidationResult } from '@pc-platform/types';
 
 import type { CreateCouponDto } from './dto/coupon.dto';

@@ -9,7 +9,7 @@ import type {
   PriceResponseDto,
   ProductPriceSummaryResponseDto,
 } from './dto/price.dto';
-import type { PricesRepository } from './prices.repository';
+import { PricesRepository } from './prices.repository';
 
 @Injectable()
 export class PricesService {

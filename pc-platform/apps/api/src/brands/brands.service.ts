@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-import type { CacheService } from '../common/cache/cache.service';
+import { CacheService } from '../common/cache/cache.service';
 import type { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginatedResponse } from '../common/dto/response.dto';
 
-import type { BrandsRepository } from './brands.repository';
+import { BrandsRepository } from './brands.repository';
 import type { CreateBrandDto, UpdateBrandDto, BrandResponseDto } from './dto/brand.dto';
 
 function generateSlug(text: string): string {

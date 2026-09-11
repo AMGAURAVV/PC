@@ -15,14 +15,14 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import type {
+import {
   AdminCreatePriceDto,
   AdminUpdatePriceDto,
   AdminCorrectPriceHistoryDto,
   BulkPriceUpdateDto,
   PriceHistoryFilterDto,
 } from '../dto/admin-price.dto';
-import type { AdminPricesService } from '../services/admin-prices.service';
+import { AdminPricesService } from '../services/admin-prices.service';
 
 @ApiTags('admin-prices')
 @ApiBearerAuth('access-token')

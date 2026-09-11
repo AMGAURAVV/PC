@@ -2,8 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import type { Prisma } from '@pc-platform/database';
 import { AuditAction, ModerationStatus } from '@pc-platform/database';
 
-import type { CommunityRepository } from '../../community/community.repository';
-import type { AdminAuditService } from '../admin-audit.service';
+import { CommunityRepository } from '../../community/community.repository';
+import { AdminAuditService } from '../admin-audit.service';
 import type {
   AdminCommunityFilterDto,
   ModerateCommunityBuildDto,

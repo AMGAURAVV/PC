@@ -25,13 +25,13 @@ import type { Response, Request as ExpressReq } from 'express';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Public } from '../common/decorators/public.decorator';
 
-import type { AuthService } from './auth.service';
+import { AuthService } from './auth.service';
 import { AuthResponseDto } from './dto/auth-response.dto';
-import type { VerifyEmailDto, ResendVerificationDto } from './dto/email-verification.dto';
-import type { GoogleAuthDto } from './dto/google-auth.dto';
-import type { LoginDto } from './dto/login.dto';
-import type { ForgotPasswordDto, ResetPasswordDto } from './dto/password-reset.dto';
-import type { RegisterDto } from './dto/register.dto';
+import { VerifyEmailDto, ResendVerificationDto } from './dto/email-verification.dto';
+import { GoogleAuthDto } from './dto/google-auth.dto';
+import { LoginDto } from './dto/login.dto';
+import { ForgotPasswordDto, ResetPasswordDto } from './dto/password-reset.dto';
+import { RegisterDto } from './dto/register.dto';
 import type { JwtPayload } from './interfaces/jwt-payload.interface';
 
 const REFRESH_COOKIE_NAME = 'refreshToken';

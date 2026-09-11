@@ -4,9 +4,8 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse as SwaggerResponse } 
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
 
-import type { CreatePermissionDto, UpdatePermissionDto} from './dto/permission.dto';
-import { PermissionResponseDto } from './dto/permission.dto';
-import type { PermissionsService } from './permissions.service';
+import { CreatePermissionDto, UpdatePermissionDto, PermissionResponseDto } from './dto/permission.dto';
+import { PermissionsService } from './permissions.service';
 
 
 @ApiTags('permissions')

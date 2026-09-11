@@ -4,9 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import type { CacheService } from '../common/cache/cache.service';
+import { CacheService } from '../common/cache/cache.service';
 import { PaginatedResponse } from '../common/dto/response.dto';
-import type { StorageService } from '../storage/storage.service';
+import { StorageService } from '../storage/storage.service';
 
 import type {
   ComparisonProductItemDto,
@@ -23,7 +23,7 @@ import type {
   ProductPriceDto,
   ProductInventoryDto,
 } from './dto/product.dto';
-import type { ProductsRepository } from './products.repository';
+import { ProductsRepository } from './products.repository';
 
 function generateSlug(text: string): string {
   return text

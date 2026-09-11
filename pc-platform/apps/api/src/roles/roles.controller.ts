@@ -4,9 +4,8 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse as SwaggerResponse } 
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
 
-import type { CreateRoleDto, UpdateRoleDto} from './dto/role.dto';
-import { RoleResponseDto } from './dto/role.dto';
-import type { RolesService } from './roles.service';
+import { CreateRoleDto, UpdateRoleDto, RoleResponseDto } from './dto/role.dto';
+import { RolesService } from './roles.service';
 
 
 @ApiTags('roles')

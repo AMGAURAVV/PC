@@ -17,14 +17,14 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import type {
+import {
   AdminProductFilterDto,
   AdminCreateProductDto,
   AdminUpdateProductDto,
   BulkProductStatusDto,
   BulkProductDeleteDto,
 } from '../dto/admin-product.dto';
-import type { AdminProductsService } from '../services/admin-products.service';
+import { AdminProductsService } from '../services/admin-products.service';
 
 @ApiTags('admin-products')
 @ApiBearerAuth('access-token')

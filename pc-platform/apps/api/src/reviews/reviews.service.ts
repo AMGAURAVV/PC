@@ -4,7 +4,7 @@ import type { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginatedResponse } from '../common/dto/response.dto';
 
 import type { CreateReviewDto, UpdateReviewDto, ReviewResponseDto } from './dto/review.dto';
-import type { ReviewsRepository } from './reviews.repository';
+import { ReviewsRepository } from './reviews.repository';
 
 @Injectable()
 export class ReviewsService {

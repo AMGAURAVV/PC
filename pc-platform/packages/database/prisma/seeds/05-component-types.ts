@@ -4,8 +4,8 @@
  * These drive the admin UI for spec data entry validation.
  */
 
-import type { PrismaClient } from '../src/generated';
-import { ComponentType, SpecDataType } from '../src/generated';
+import type { PrismaClient } from '../../src/generated';
+import { ComponentType, SpecDataType } from '../../src/generated';
 
 const COMPONENT_TYPES = [
   { type: ComponentType.CPU,         displayName: 'Processor (CPU)',     sortOrder: 1 },

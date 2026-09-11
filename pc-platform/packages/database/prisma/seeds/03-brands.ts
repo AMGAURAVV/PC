@@ -3,7 +3,7 @@
  * Seeds major PC hardware brands.
  */
 
-import type { PrismaClient } from '../src/generated';
+import type { PrismaClient } from '../../src/generated';
 
 const BRANDS = [
   // Processors
@@ -33,7 +33,6 @@ const BRANDS = [
   { name: 'SK Hynix',   slug: 'sk-hynix',   countryCode: 'KR', websiteUrl: 'https://skhynix.com' },
   // PSU
   { name: 'Seasonic',   slug: 'seasonic',   countryCode: 'TW', websiteUrl: 'https://seasonic.com' },
-  { name: 'EVGA',       slug: 'evga-psu',   countryCode: 'US', websiteUrl: 'https://evga.com' },
   { name: 'be quiet!',  slug: 'be-quiet',   countryCode: 'DE', websiteUrl: 'https://bequiet.com' },
   { name: 'Cooler Master', slug: 'cooler-master', countryCode: 'TW', websiteUrl: 'https://coolermaster.com' },
   { name: 'Thermaltake', slug: 'thermaltake', countryCode: 'TW', websiteUrl: 'https://thermaltake.com' },

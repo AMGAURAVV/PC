@@ -6,9 +6,8 @@ import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
 
-import { WishlistResponseDto } from './dto/wishlist.dto';
-import type { AddToWishlistDto} from './dto/wishlist.dto';
-import type { WishlistService } from './wishlist.service';
+import { WishlistResponseDto , AddToWishlistDto} from './dto/wishlist.dto';
+import { WishlistService } from './wishlist.service';
 
 @ApiTags('wishlist')
 @ApiBearerAuth('access-token')

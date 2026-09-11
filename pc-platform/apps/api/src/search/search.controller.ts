@@ -4,8 +4,8 @@ import { ApiOperation, ApiTags, ApiResponse as SwaggerResponse } from '@nestjs/s
 import { Public } from '../common/decorators/public.decorator';
 import { ApiResponse } from '../common/dto/response.dto';
 
-import type { SearchQueryDto, SuggestQueryDto } from './dto/search.dto';
-import type { SearchService } from './search.service';
+import { SearchQueryDto, SuggestQueryDto } from './dto/search.dto';
+import { SearchService } from './search.service';
 
 @ApiTags('search')
 @Controller('search')

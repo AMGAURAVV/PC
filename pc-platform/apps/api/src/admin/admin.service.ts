@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import type { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginatedResponse } from '../common/dto/response.dto';
 
-import type { AdminRepository } from './admin.repository';
+import { AdminRepository } from './admin.repository';
 import type { AuditLogResponseDto, DashboardSummaryDto } from './dto/admin.dto';
 
 @Injectable()

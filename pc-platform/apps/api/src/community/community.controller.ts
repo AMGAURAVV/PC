@@ -15,8 +15,8 @@ import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Public } from '../common/decorators/public.decorator';
 
-import type { CommunityService } from './community.service';
-import type {
+import { CommunityService } from './community.service';
+import {
   QueryCommunityBuildsDto,
   PublishCommunityBuildDto,
   AddCommunityCommentDto,

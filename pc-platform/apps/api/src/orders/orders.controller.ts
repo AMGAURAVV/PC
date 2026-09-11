@@ -4,13 +4,12 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse as SwaggerResponse } 
 import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
-import type { PaginationDto } from '../common/dto/pagination.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 import { RolesGuard } from '../common/guards/roles.guard';
 
-import type { CheckoutOrderDto, CheckoutSummaryDto } from './dto/checkout.dto';
-import type { CreateOrderDto, UpdateOrderStatusDto} from './dto/order.dto';
-import { OrderResponseDto } from './dto/order.dto';
-import type { OrdersService } from './orders.service';
+import { CheckoutOrderDto, CheckoutSummaryDto } from './dto/checkout.dto';
+import { CreateOrderDto, UpdateOrderStatusDto, OrderResponseDto } from './dto/order.dto';
+import { OrdersService } from './orders.service';
 
 
 @ApiTags('orders')

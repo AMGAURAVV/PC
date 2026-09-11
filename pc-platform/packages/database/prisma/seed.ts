@@ -23,7 +23,7 @@
  *   09 → Demo users (depends on roles)
  */
 
-import { PrismaClient } from './src/generated';
+import { PrismaClient } from '../src/generated';
 
 import { seedRoles }                from './seeds/01-roles';
 import { seedPermissions }          from './seeds/02-permissions';

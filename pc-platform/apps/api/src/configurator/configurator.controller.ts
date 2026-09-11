@@ -8,8 +8,8 @@ import type {
 
 import { Public } from '../common/decorators/public.decorator';
 
-import type { ConfiguratorService } from './configurator.service';
-import type { GetBaseBuildsQueryDto } from './dto/configurator.dto';
+import { ConfiguratorService } from './configurator.service';
+import { GetBaseBuildsQueryDto } from './dto/configurator.dto';
 
 @Controller('configurator')
 export class ConfiguratorController {

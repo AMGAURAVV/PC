@@ -4,7 +4,7 @@
  * These are the baseline RBAC roles — do not delete.
  */
 
-import type { PrismaClient } from '../src/generated';
+import type { PrismaClient } from '../../src/generated';
 
 export async function seedRoles(prisma: PrismaClient) {
   const roles = [

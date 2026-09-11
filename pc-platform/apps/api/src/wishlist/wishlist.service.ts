@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 
 import type { AddToWishlistDto, WishlistResponseDto } from './dto/wishlist.dto';
-import type { WishlistRepository } from './wishlist.repository';
+import { WishlistRepository } from './wishlist.repository';
 
 @Injectable()
 export class WishlistService {

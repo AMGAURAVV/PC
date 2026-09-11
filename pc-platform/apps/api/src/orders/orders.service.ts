@@ -6,10 +6,9 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import type { CompatibilityService } from '@pc-platform/compatibility-engine';
-import type {
-  DatabaseService} from '@pc-platform/database';
+import { CompatibilityService } from '@pc-platform/compatibility-engine';
 import {
+  DatabaseService,
   OrderStatus,
   AddressType,
   ComponentType,
@@ -24,15 +23,15 @@ import {
   ComponentCategory,
 } from '@pc-platform/types';
 
-import type { CartRepository } from '../cart/cart.repository';
+import { CartRepository } from '../cart/cart.repository';
 import type { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginatedResponse } from '../common/dto/response.dto';
-import type { CouponsService } from '../coupons/coupons.service';
-import type { PaymentsService } from '../payments/payments.service';
+import { CouponsService } from '../coupons/coupons.service';
+import { PaymentsService } from '../payments/payments.service';
 
 import type { CheckoutOrderDto, CheckoutSummaryDto } from './dto/checkout.dto';
 import type { CreateOrderDto, UpdateOrderStatusDto, OrderResponseDto } from './dto/order.dto';
-import type { OrdersRepository } from './orders.repository';
+import { OrdersRepository } from './orders.repository';
 
 interface ResolvedItem {
   product: any;
